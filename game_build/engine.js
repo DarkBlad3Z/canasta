@@ -101,7 +101,7 @@ function layThrees(rs, seat){
   while (true){
     const i = h.findIndex(isThree); if (i < 0) break;
     if (!rs.stock.length){ endRound(rs, 'stock'); return {n, ended:true}; }
-    const three = h.splice(i, 1)[0]; t.threes.push(three); n++; markFresh(rs, seat, {rank:'3s'}, [three]);
+    const three = h.splice(i, 1)[0]; three.by = seat; t.threes.push(three); n++; markFresh(rs, seat, {rank:'3s'}, [three]);
     h.push(rs.stock.pop());
   }
   return {n, ended:false};
@@ -207,7 +207,7 @@ function applyOpening(rs, seat, groups){
   const team = rs.teams[teamOf(seat)];
   for (const g of groups){
     const r = g.find(c => !isWild(c)).rank, wl = g.filter(isWild).length;
-    const m = {rank:r, cards:g.slice(), pure:(r === '7' || (r === 'A' && wl === 0)), closed:false};
+    const m = {rank:r, cards:g.slice(), pure:(r === '7' || (r === 'A' && wl === 0)), closed:false, owner:seat};
     team.melds.push(m); markFresh(rs, seat, m, g); closeIfFull(rs, m, SHORT[seat]);
   }
   team.opened = true; rs.openedCount++;
@@ -248,7 +248,7 @@ function playGroup(rs, seat, cardIds, target){
     if (total > 7) return bad('A canasta is 7 cards. That would go over 7.');
     if (remaining < keepAfter(team, 'W', total, false, seat)) return bad(remaining === 0 ? 'You must keep a card to discard.' : 'That would leave you one card you could not discard: going out needs two canastas and no unfinished 7s, clean Aces or wild meld. Keep at least 2 cards.');
     removeFromHand(hand, cards);
-    let m = ex; if (ex) ex.cards.push(...cards); else { m = {rank:'W', cards:cards.slice(), pure:false, closed:false}; team.melds.push(m); }
+    let m = ex; if (ex) ex.cards.push(...cards); else { m = {rank:'W', cards:cards.slice(), pure:false, closed:false, owner:seat}; team.melds.push(m); }
     markFresh(rs, seat, m, cards); closeIfFull(rs, m, SHORT[seat]);
     return {ok:true, desc:`${ex ? 'added ' + meldCards(cards) + ' to the wild meld (now ' + m.cards.length + ' cards)' : 'started a wild meld with ' + meldCards(cards)}`};
   }
@@ -272,7 +272,7 @@ function playGroup(rs, seat, cardIds, target){
     return bad('You must still hold a card to discard, and discarding your last card means going out (which needs two canastas and no unfinished 7s, clean Aces or wild meld). Keep at least 2 cards.');
   removeFromHand(hand, cards);
   let m = ex;
-  if (ex) ex.cards.push(...cards); else { m = {rank:r, cards:cards.slice(), pure:(r === '7' || r === 'A'), closed:false}; team.melds.push(m); }
+  if (ex) ex.cards.push(...cards); else { m = {rank:r, cards:cards.slice(), pure:(r === '7' || r === 'A'), closed:false, owner:seat}; team.melds.push(m); }
   markFresh(rs, seat, m, cards); closeIfFull(rs, m, SHORT[seat]);
   return {ok:true, desc:`${ex ? 'added ' + meldCards(cards) + ' to the ' + rankName(r) + ' meld (now ' + m.cards.length + ' cards)' : 'started a ' + rankName(r) + ' meld with ' + meldCards(cards)}`};
 }
@@ -307,7 +307,7 @@ function pickPack(rs, seat){
   if (info.mode === 'add'){ info.meld.cards.push(top); markFresh(rs, seat, info.meld, [top]); closeIfFull(rs, info.meld, SHORT[seat]); }
   else {
     removeFromHand(h, info.pair);
-    const m = {rank:top.rank, cards:[top, ...info.pair], pure:(top.rank === '7' || top.rank === 'A'), closed:false};
+    const m = {rank:top.rank, cards:[top, ...info.pair], pure:(top.rank === '7' || top.rank === 'A'), closed:false, owner:seat};
     team.melds.push(m); markFresh(rs, seat, m, m.cards); closeIfFull(rs, m, SHORT[seat]);
   }
   const n = rs.pack.length; h.push(...rs.pack); rs.pack = [];
@@ -333,7 +333,7 @@ function pickPackOpening(rs, seat, groups){
   rs.pack.pop();
   applyOpening(rs, seat, groups);
   const team = rs.teams[teamOf(seat)];
-  const m = {rank:top.rank, cards:[top, ...pair], pure:(top.rank === '7' || top.rank === 'A'), closed:false};
+  const m = {rank:top.rank, cards:[top, ...pair], pure:(top.rank === '7' || top.rank === 'A'), closed:false, owner:seat};
   team.melds.push(m); markFresh(rs, seat, m, m.cards); closeIfFull(rs, m, SHORT[seat]);
   const n = rs.pack.length; h.push(...rs.pack); rs.pack = [];
   rs.pickedPack = true; rs.phase = 'play'; rs.pendingTalon = null;

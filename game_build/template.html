@@ -4,6 +4,8 @@
 :root{color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;font-family:Calibri,'Segoe UI',Helvetica,Arial,sans-serif;background:#eef3ef;color:#1d2a22;font-size:15px}
+.modal.drag h2{cursor:move;user-select:none;touch-action:none}.minbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:60;background:#fff;border:2px solid #1F5D3A;border-radius:12px;padding:8px 12px;box-shadow:0 4px 18px rgba(0,0,0,.3)}
+.sphand .meld{background:#f4f8f5}
 .home{max-width:980px;margin:0 auto}.hero{background:linear-gradient(135deg,#1F5D3A,#2E7D4F);color:#fff;border-radius:16px;text-align:center;padding:26px 16px;margin-bottom:14px}
 .hero .suits{font-size:30px;letter-spacing:10px}.hero h1{font-family:Georgia,serif;font-size:38px;margin:6px 0 2px}.hero p{margin:3px 0;opacity:.92}.hero .who{margin-top:10px;font-size:14.5px;background:rgba(0,0,0,.18);display:inline-block;padding:5px 14px;border-radius:20px}
 .hgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hcard{background:#fff;border:1px solid #cfddd3;border-radius:14px;padding:16px}.hcard h2{font-family:Georgia,serif;color:#1F5D3A;margin:0 0 4px;font-size:21px}.hcard p{margin:4px 0 10px;color:#4a5d51}
@@ -41,6 +43,13 @@ header.top h1{font-family:Georgia,serif;font-size:22px;margin:0;color:#1F5D3A}
 .sc.mid{text-align:center;min-width:130px}
 .felt{background:#1F5D3A;border-radius:12px;padding:10px;color:#fff;margin-bottom:8px}
 .table{display:grid;grid-template-columns:minmax(82px,1fr) auto minmax(82px,1fr);grid-template-areas:". n ." "w c e" ". s .";gap:10px 12px;align-items:center;padding:14px 12px;border-radius:26px;background:radial-gradient(ellipse at center,#2b7d4f 0%,#1F5D3A 72%);box-shadow:inset 0 0 0 5px #17492d}
+.table.wide{grid-template-columns:minmax(250px,1fr) minmax(290px,auto) minmax(250px,1fr);gap:12px 16px;align-items:start;padding:18px 16px}
+.table.wide .t-n,.table.wide .t-s{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.table.wide .t-w,.table.wide .t-e{display:flex;flex-direction:column;gap:8px;min-width:0;align-self:center}.table.wide .t-w{align-items:flex-start}.table.wide .t-e{align-items:flex-end}
+.table.wide .center{align-self:center}
+.table.wide .pm{display:flex;flex-direction:column;gap:6px;align-items:inherit}.table.wide .t-n .pm,.table.wide .t-s .pm{flex-direction:row;flex-wrap:wrap;justify-content:center}
+.table.wide .melds{gap:8px}.table.wide .t-w .melds,.table.wide .t-e .melds{flex-direction:column;align-items:inherit}.table.wide .threes{color:#fff;margin-top:4px}
+.table.wide .t-n .melds,.table.wide .t-s .melds{justify-content:center}
 .t-n{grid-area:n;justify-self:center}.t-w{grid-area:w;justify-self:start}.t-e{grid-area:e;justify-self:end}.t-s{grid-area:s;justify-self:center}.table .center{grid-area:c;flex-direction:column;align-items:center;gap:8px}
 .table .seat{min-width:88px;padding:8px 12px}.piles{display:flex;gap:18px;justify-content:center;align-items:flex-start;flex-wrap:wrap}.deadr{font-size:13px;text-align:center;opacity:.95}.cap{background:#ffb74d;color:#1d2a22;border-radius:12px;padding:6px 12px;font-size:14px;font-weight:600;max-width:360px;text-align:center;box-shadow:0 0 0 3px rgba(255,152,0,.45)}.cap div{margin:1px 0}
 @media(min-width:700px){.table{grid-template-columns:minmax(130px,1fr) auto minmax(130px,1fr);padding:18px 24px}.table .seat{min-width:120px;padding:10px 16px;font-size:15px}.table .seat .b{font-size:13px}}
@@ -438,7 +447,7 @@ function loop(){
 }
 function afterAction(){ if (rs.ended){ finishRound(); return; } loop(); }
 function finishRound(){
-  aiBusy = false; clearHint(); notice = null; unstageSilently(); if (modal !== 'drills') modal = 'round'; recordGame(); render();
+  aiBusy = false; clearHint(); notice = null; unstageSilently(); dragX = dragY = 0; if (modal !== 'drills') modal = 'round'; recordGame(); render();
   try { const t = rs.result.teams; speak(`Round ${game.round} over. You and North scored ${t[0].total}. West and East scored ${t[1].total}.` + (game.over ? ` ${TEAM_NAMES[game.winner]} win the game!` : '')); } catch (e) {}
 }
 const myTurn = ph => rs && !rs.ended && rs.current === 0 && !aiBusy && (!ph || rs.phase === ph);
@@ -602,15 +611,26 @@ function orderedHand(){
 }
 function resetHandOrder(){ handSeen = new Set(rs.hands[0].map(c => c.id)); newIds = new Set(); }
 function sortHand(h){ return h.slice().sort((a, b) => ORDER.indexOf(a.rank) - ORDER.indexOf(b.rank) || a.suit.localeCompare(b.suit)); }
-function meldsHTML(team, own){
-  if (!team.melds.length && !team.threes.length) return '<div class="empty">Nothing on the table yet.</div>';
+const isWide = () => !!window.__forceWide || (typeof matchMedia === 'function' && matchMedia('(min-width:1000px)').matches);
+/* who a meld / a 3 belongs to on the table: whoever started it (older data falls back to the team's first player) */
+const meldOwner = (m, team) => m.owner != null ? m.owner : (team === 0 ? 0 : 1);
+const threeOwner = (c, team) => c.by != null ? c.by : (team === 0 ? 0 : 1);
+function seatMeldsHTML(s){
+  const ti = teamOf(s), team = rs.teams[ti];
+  const melds = team.melds.filter(m => meldOwner(m, ti) === s), threes = team.threes.filter(c => threeOwner(c, ti) === s);
+  if (!melds.length && !threes.length) return '<div class="pm"></div>';
+  return `<div class="pm">${meldsHTML(team, ti === 0, {melds, threes})}</div>`;
+}
+function meldsHTML(team, own, only){
+  const melds = only ? only.melds : team.melds, threes = only ? only.threes : team.threes;
+  if (!melds.length && !threes.length) return '<div class="empty">Nothing on the table yet.</div>';
   let h = '<div class="melds">';
-  for (const m of team.melds){
+  for (const m of melds){
     const lbl = `${rankName(m.rank)} ×${m.cards.length}${m.closed ? ' — ' + canastaDesc(m).toUpperCase() + ' CANASTA' : ''}${!m.closed && m.pure ? ' (clean, must close)' : ''}${!m.closed && m.rank === 'W' ? ' (must close)' : ''}${!m.closed && m.rank !== 'W' && mWild(m) ? ' (mixed)' : ''}`;
     h += `<div class="meld ${m.closed ? 'can' : ''} ${freshMeld(rs.teams.indexOf(team) + m.rank) >= 0 ? 'fresh' : ''} ${own && !m.closed ? 'tgt' : ''} ${own && hintTarget === m.rank && !m.closed ? 'hint' : ''}" ${own && !m.closed ? `data-meld="${m.rank}" title="Select cards, then click here to add them to this meld"` : ''}><div class="ml">${esc(lbl)}</div><div class="cs">${m.cards.map(c => cardHTML(c, {mini:true})).join('')}</div></div>`;
   }
   h += '</div>';
-  if (team.threes.length) h += `<div class="threes ${freshMeld(rs.teams.indexOf(team) + '3s') >= 0 ? 'fresh' : ''}" style="margin-top:6px">3s: ${team.threes.map(c => cardHTML(c, {mini:true})).join('')}</div>`;
+  if (threes.length) h += `<div class="threes ${freshMeld(rs.teams.indexOf(team) + '3s') >= 0 ? 'fresh' : ''}" style="margin-top:6px">3s: ${threes.map(c => cardHTML(c, {mini:true})).join('')}</div>`;
   return h;
 }
 function statusLine(){
@@ -630,6 +650,7 @@ function modalsHTML(){
   if (modal === 'settings') h += settingsModal();
   if (modal === 'guide') h += guideModal();
   if (modal === 'leaderboard') h += leaderboardModal();
+  if (modal === 'roundmin' && screen === 'game') h += `<div class="minbar"><button class="btn primary" data-act="showround">Show round results</button> <button class="btn" data-act="next">${game && game.over ? '' : 'Next round'}</button></div>`.replace('<button class="btn" data-act="next"></button>', '');
   if (modal === 'ask' && rs && rs.pendingAsk) h += `<div class="modalbg"><div class="modal"><h2>North asks: "May I go out?"</h2><p>North has two canastas and can go out this turn if you agree.</p><p>Cards still in your hand count against your team if North goes out. You hold <b>${sumVal(rs.hands[0])} points</b> in ${rs.hands[0].length} cards.</p><p class="empty">North can only ask once this round. If you say no, North cannot go out this round.</p><button class="btn primary" data-act="askyes">Yes, go ahead</button> <button class="btn" data-act="askno">No, not yet</button></div></div>`;
   if (modal === 'drills') h += drillModal();
   if (modal === 'confirm') h += `<div class="modalbg"><div class="modal"><h2>Start a new game?</h2><p>Your current scores will be lost.</p><button class="btn primary" data-act="newgame2">Yes, new game</button> <button class="btn" data-act="closemodal">Cancel</button></div></div>`;
@@ -638,6 +659,7 @@ function modalsHTML(){
 function paint(html){
   const ae = document.activeElement, keep = ae && ['pname', 'vsel', 'vrate', 'mvol', 'mstyle'].includes(ae.id) ? {id:ae.id, s:ae.selectionStart, e:ae.selectionEnd} : null;
   $app().innerHTML = html;
+  const dm = document.querySelector('.modal.drag'); if (dm && (dragX || dragY)) dm.style.transform = `translate(${dragX}px, ${dragY}px)`;
   if (keep){ const n = document.getElementById(keep.id); if (n){ n.focus(); try { n.setSelectionRange(keep.s, keep.e); } catch (e) {} } }
 }
 function homeHTML(){
@@ -673,14 +695,17 @@ function render(){
    <div class="sc you"><div class="n">${TEAM_NAMES[0]}</div><div class="v">${game.scores[0].toLocaleString()}</div><div class="s">${t0.opened ? '✓ Opened' : 'Opening needs ' + rs.needs[0]} · Canastas: ${t0.melds.filter(m => m.closed).length}${(() => { const st = goOutState(rs, 0); return st === 'can-ask' ? ' · <b>ask partner to go out</b>' : (st === 'yes' && goOutCheck(rs, 0).ok ? ' · <b>can go out</b>' : (st === 'refused' ? ' · partner said no' : '')); })()}</div></div>
    <div class="sc opp"><div class="n">${TEAM_NAMES[1]}</div><div class="v">${game.scores[1].toLocaleString()}</div><div class="s">${t1.opened ? '✓ Opened' : 'Opening needs ' + rs.needs[1]} · Canastas: ${t1.melds.filter(m => m.closed).length}</div></div>
    <div class="sc mid"><div class="n">Round ${game.round}</div><div class="s">First to 8,500 wins</div><div class="s">Level: ${LEVELS[levelKey][0]}</div><div class="s">Player: <span id="plname">${esc(playerName)}</span></div><div class="s">Dealer: ${SHORT[game.dealer]}</div></div></div>`;
+  const wide = isWide();
   const seatBox = (s, label) => `<div class="seat ${shownSeat === s && !rs.ended ? 'cur' : ''}">${label}<div class="b">${rs.hands[s].length} cards${rs.talon[s].length ? ' + talon ' + rs.talon[s].length : ''}</div></div>`;
-  h += `<div class="felt table"><div class="t-n">${seatBox(2, 'North (partner)')}</div><div class="t-w">${seatBox(1, 'West')}</div>
+  const zone = (s, label, melds1st) => wide ? (melds1st ? seatMeldsHTML(s) + seatBox(s, label) : seatBox(s, label) + seatMeldsHTML(s)) : seatBox(s, label);
+  h += `<div class="felt table ${wide ? 'wide' : ''}"><div class="t-n">${zone(2, 'North (partner)')}</div><div class="t-w">${zone(1, 'West')}</div>
    <div class="center"><div class="piles">
     <div class="pile ${me && rs.phase === 'draw' ? 'click' : ''}" data-act="draw" title="Click to draw">${backHTML()}<div class="lbl">Draw pile: ${rs.stock.length}<br>${rs.stock.length >= 9 ? 'Talons available' : 'No more talons'}</div></div>
     <div class="pile ${me && rs.phase === 'draw' && rs.pack.length ? 'click' : ''} ${top && rs.lastDiscard && rs.lastDiscard.id === top.id && rs.lastDiscard.t === hlTurn ? 'justdisc' : ''}" data-act="pack" title="Click to pick up the pack">${top ? cardHTML(top, {mini:false}).replace(' data-card="' + top.id + '"', '') : '<div class="card" style="background:transparent;border:1.5px dashed #fff"></div>'}<div class="lbl">Pack: ${rs.pack.length}${top && rs.lastDiscard && rs.lastDiscard.id === top.id && rs.lastDiscard.t === hlTurn ? '<br><b>' + SHORT[rs.lastDiscard.seat] + ' just discarded</b>' : ''}${!rs.pack.length ? '<br>(empty: no 7, Ace,<br>wild or dead card)' : ''}</div></div>
    </div><div class="deadr">Dead ranks: <b>${deadList().join(', ') || 'none yet'}</b></div>${caption ? `<div class="cap">${caption.slice(0, 3).map(l => `<div>${esc(l)}</div>`).join('')}</div>` : ''}</div>
-   <div class="t-e">${seatBox(3, 'East')}</div><div class="t-s">${seatBox(0, 'You')}</div></div>`;
+   <div class="t-e">${zone(3, 'East')}</div><div class="t-s">${zone(0, 'You', true)}</div></div>`;
   h += `<div class="status">${esc(statusLine())}</div>`;
+  if (rs.ended && rs.end && rs.end.special) h += `<div class="panel"><h3>${esc(SEATS[rs.end.seat])}'s winning hand: ${esc(rs.end.special.name)} (${rs.end.special.points.toLocaleString()} points)</h3>${specialHandHTML(rs.end.special)}</div>`;
   if (hintText) h += `<div class="notice hint"><b>Hint:</b> ${esc(hintText)}</div>`;
   if (notice) h += `<div class="notice ${notice.kind}">${esc(notice.text)}</div>`;
   if (staged.length){
@@ -698,8 +723,10 @@ function render(){
    <button class="btn primary" data-act="discard" ${me && rs.phase === 'play' && sel.size === 1 ? '' : 'disabled'}>Discard selected</button>
    ${sp ? `<button class="btn gold" data-act="special">Declare ${esc(sp.name)} (${sp.points.toLocaleString()})</button>` : ''}
   </div></div>`;
-  h += `<div class="panel"><h3>Your team's table (${TEAM_NAMES[0]})</h3>${meldsHTML(t0, true)}</div>`;
-  h += `<div class="panel"><h3>Opponents' table (${TEAM_NAMES[1]})</h3>${meldsHTML(t1, false)}</div>`;
+  if (!wide){
+    h += `<div class="panel"><h3>Your team's table (${TEAM_NAMES[0]})</h3>${meldsHTML(t0, true)}</div>`;
+    h += `<div class="panel"><h3>Opponents' table (${TEAM_NAMES[1]})</h3>${meldsHTML(t1, false)}</div>`;
+  }
   const who = t => /^(You|North)\b/.test(t) ? 'm' : (/^(West|East)\b/.test(t) ? 'o' : '');
   h += `</div><aside class="logcol"><div class="panel"><h3>Game log</h3><div class="feed" id="feed">${feed.slice(-60).map(t => `<div class="${who(t)}">${esc(t)}</div>`).join('')}</div></div></aside></div>`;
   h += modalsHTML();
@@ -714,13 +741,31 @@ function sbTable(t, name){
   h += `<tr class="tot"><td>Round total</td><td class="p ${t.total < 0 ? 'neg' : 'pos'}">${fmt(t.total)}</td></tr></table></div>`;
   return h;
 }
+/* the 14 cards of a declared special hand, grouped by rank so the shape (for example 4-3-3-2-2) is easy to see */
+function specialHandHTML(sp){
+  const groups = {}; sp.cards.forEach(c => { (groups[c.rank] = groups[c.rank] || []).push(c); });
+  const nm = r => r === 'JK' ? 'Jokers' : (r === '2' ? 'Deuces' : (r==='A'?'Aces':r==='K'?'Kings':r==='Q'?'Queens':r==='J'?'Jacks':r+'s'));
+  const keys = Object.keys(groups).sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
+  return `<div class="melds sphand">${keys.map(r => `<div class="meld"><div class="ml">${esc(nm(r))} ×${groups[r].length}</div><div class="cs">${groups[r].map(c => cardHTML(c, {mini:true})).join('')}</div></div>`).join('')}</div>`;
+}
+let dragX = 0, dragY = 0, dragging = null;
+document.addEventListener('pointerdown', e => {
+  const h = e.target.closest && e.target.closest('.modal.drag h2'); if (!h) return;
+  dragging = {x:e.clientX - dragX, y:e.clientY - dragY}; e.preventDefault();
+});
+document.addEventListener('pointermove', e => {
+  if (!dragging) return; dragX = e.clientX - dragging.x; dragY = e.clientY - dragging.y;
+  const m = document.querySelector('.modal.drag'); if (m) m.style.transform = `translate(${dragX}px, ${dragY}px)`;
+});
+document.addEventListener('pointerup', () => { dragging = null; });
 function roundModal(){
   const e = rs.end, why = e.reason === 'out' ? `${SEATS[e.seat]} went out.` : (e.reason === 'special' ? `${SEATS[e.seat]} declared ${e.special.name}.` : 'The draw pile ran out.');
-  let h = `<div class="modalbg"><div class="modal"><h2>Round ${game.round} over</h2><p>${esc(why)}</p><div class="cols">${sbTable(rs.result.teams[0], TEAM_NAMES[0])}${sbTable(rs.result.teams[1], TEAM_NAMES[1])}</div>`;
+  let h = `<div class="modalbg"><div class="modal drag"><h2 title="Drag me out of the way">Round ${game.round} over <span class="empty" style="font-size:12px;font-weight:400">(drag this title to move the box)</span></h2><p>${esc(why)}</p>${e.reason === 'special' ? `<div class="panel"><h3>${esc(SEATS[e.seat])}'s winning hand: ${esc(e.special.name)} (${e.special.points.toLocaleString()} points)</h3>${specialHandHTML(e.special)}</div>` : ''}<div class="cols">${sbTable(rs.result.teams[0], TEAM_NAMES[0])}${sbTable(rs.result.teams[1], TEAM_NAMES[1])}</div>`;
   h += `<p class="empty">Cards left in hand: ${[0,1,2,3].map(s => SHORT[s] + ' ' + rs.hands[s].length).join(' · ')}</p>`;
   h += `<p><b>Game score:</b> ${TEAM_NAMES[0]} ${game.scores[0].toLocaleString()} &nbsp;|&nbsp; ${TEAM_NAMES[1]} ${game.scores[1].toLocaleString()}</p>`;
   if (game.over) h += `<p class="notice good"><b>${TEAM_NAMES[game.winner]} win the game!</b></p><p class="empty">Saved to the leaderboard as ${esc(playerName)}.</p><button class="btn primary" data-act="newgame2">Start a new game</button>`;
   else h += `<button class="btn primary" data-act="next">Next round</button>`;
+  h += ` <button class="btn" data-act="peek">Hide this box to see the table</button>`;
   return h + '</div></div>';
 }
 /* ===== LEADERBOARD: finished games are kept in this browser ===== */
@@ -827,10 +872,11 @@ document.addEventListener('click', e => {
   const a = b.dataset.act;
   if ((a === 'draw' || a === 'pack') && rs && !myTurn('draw')){ explainDisabled(a); return; }
   ({drills:openDrills, draw:doDraw, pack:doPack, lay3:doLay3, meld:doMeld, commit:doCommit, undo:doUndo, discard:doDiscard, special:doSpecial, hint:doHint,
-    rules(){ modal = 'rules'; render(); }, specials(){ modal = 'specials'; render(); }, settings(){ modal = 'settings'; nameDraft = playerName; render(); }, askout(){ doAskOut(); }, askyes(){ answerAsk(true); }, askno(){ answerAsk(false); }, home(){ goHome(); }, playgame(){ playFromHome(); }, homenew(){ if (game && !game.over){ modal = 'confirm'; render(); } else startGame(); }, savename(){ saveName(); }, guide(){ modal = 'guide'; render(); }, leaderboard(){ lbConfirm = false; modal = 'leaderboard'; render(); },
+    rules(){ modal = 'rules'; render(); }, specials(){ modal = 'specials'; render(); }, settings(){ modal = 'settings'; nameDraft = playerName; render(); }, peek(){ modal = 'roundmin'; render(); }, showround(){ modal = 'round'; render(); }, askout(){ doAskOut(); }, askyes(){ answerAsk(true); }, askno(){ answerAsk(false); }, home(){ goHome(); }, playgame(){ playFromHome(); }, homenew(){ if (game && !game.over){ modal = 'confirm'; render(); } else startGame(); }, savename(){ saveName(); }, guide(){ modal = 'guide'; render(); }, leaderboard(){ lbConfirm = false; modal = 'leaderboard'; render(); },
     lbreset(){ if (!lbConfirm) lbConfirm = true; else { history = []; saveHistory(); lbConfirm = false; } render(); }, lbcancel(){ lbConfirm = false; render(); }, vtest(){ speak('You drew Ace of diamonds. West discarded King of clubs.', true); }, closemodal(){ modal = screen === 'game' && rs && rs.ended ? 'round' : null; render(); },
     next(){ nextRound(); }, newgame(){ modal = 'confirm'; render(); }, newgame2(){ startGame(); }})[a]();
 });
+let lastWide = isWide(); window.addEventListener('resize', () => { const w = isWide(); if (w !== lastWide){ lastWide = w; if (screen === 'game') render(); } });
 loadSettings(); loadHistory();
 if (window.__autoplay || location.hash === '#play') startGame(); else render();   // otherwise show the home page
 </script></body></html>
