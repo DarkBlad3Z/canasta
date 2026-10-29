@@ -4,15 +4,35 @@
 :root{color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;font-family:Calibri,'Segoe UI',Helvetica,Arial,sans-serif;background:#eef3ef;color:#1d2a22;font-size:15px}
+.home{max-width:980px;margin:0 auto}.hero{background:linear-gradient(135deg,#1F5D3A,#2E7D4F);color:#fff;border-radius:16px;text-align:center;padding:26px 16px;margin-bottom:14px}
+.hero .suits{font-size:30px;letter-spacing:10px}.hero h1{font-family:Georgia,serif;font-size:38px;margin:6px 0 2px}.hero p{margin:3px 0;opacity:.92}.hero .who{margin-top:10px;font-size:14.5px;background:rgba(0,0,0,.18);display:inline-block;padding:5px 14px;border-radius:20px}
+.hgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hcard{background:#fff;border:1px solid #cfddd3;border-radius:14px;padding:16px}.hcard h2{font-family:Georgia,serif;color:#1F5D3A;margin:0 0 4px;font-size:21px}.hcard p{margin:4px 0 10px;color:#4a5d51}
+.hcard.main{grid-column:1/-1;background:#E8F3EC;border-color:#9ec2ab}.btn.big{font-size:17px;padding:12px 22px;margin:4px 6px 4px 0}
+.hbtn{display:block;width:100%;text-align:left;background:#f6faf7;border:1px solid #cfddd3;border-radius:10px;padding:10px 12px;margin:6px 0;cursor:pointer;font:inherit;color:#1d2a22}.hbtn:hover{background:#e4efe8;border-color:#1F5D3A}.hbtn b{display:block;color:#1F5D3A}.hbtn span{font-size:13px;color:#5b6d62}
+@media(max-width:700px){.hgrid{grid-template-columns:1fr}.hero h1{font-size:30px}}
 #app{max-width:1100px;margin:0 auto;padding:10px 12px 40px}
 header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 header.top h1{font-family:Georgia,serif;font-size:22px;margin:0;color:#1F5D3A}
+.card{touch-action:manipulation}
+.meld.fresh{border-color:#ff6f00;background:#fff3e0;box-shadow:0 0 0 3px #ff9800;animation:freshpulse 1s ease-in-out 5}
+.threes.fresh{display:inline-block;background:#fff3e0;border-radius:8px;padding:3px 8px;box-shadow:0 0 0 3px #ff9800;animation:freshpulse 1s ease-in-out 5}
+.card.fresh{box-shadow:0 0 0 3px #ff6f00;position:relative;z-index:1}
+.pile.justdisc .card{box-shadow:0 0 0 4px #ffd54f;animation:freshpulse 1s ease-in-out 5}.pile.justdisc .lbl b{color:#ffd54f}
+@keyframes freshpulse{0%,100%{box-shadow:0 0 0 3px #ff9800}50%{box-shadow:0 0 0 8px rgba(255,152,0,.5)}}
+@media (prefers-reduced-motion:reduce){.meld.fresh,.threes.fresh,.pile.justdisc .card{animation:none}}
+.card.new{position:relative;animation:cardflash .8s ease-in-out infinite}.card.new::after{content:'NEW';position:absolute;top:-9px;right:-4px;background:#E65100;color:#fff;font-size:8px;font-weight:700;padding:1px 3px;border-radius:3px;letter-spacing:.3px}
+@keyframes cardflash{0%,100%{background:#fff;box-shadow:0 0 0 3px #C98A00}50%{background:#ffd54f;box-shadow:0 0 0 5px #FF6F00}}
+@media (prefers-reduced-motion:reduce){.card.new{animation:none;background:#ffd54f;box-shadow:0 0 0 4px #FF6F00}}
 .btn{border:1px solid #1F5D3A;background:#fff;color:#1F5D3A;border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer;font-family:inherit}
 .btn:hover:not(:disabled){background:#e4efe8}
 .btn.primary{background:#1F5D3A;color:#fff}.btn.primary:hover:not(:disabled){background:#17492d}
 .btn.warn{border-color:#7B4FB0;color:#7B4FB0}
 .btn.gold{background:#C98A00;border-color:#C98A00;color:#fff}
-.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+.k-nw{background:#d9e8fb}.k-mw{background:#fff4b8}.k-ew{background:#fbdce7}
+.btn.k-nw{border-color:#6f9bd1;color:#1d3f6b}.btn.k-mw{border-color:#cdb93f;color:#5c4d00}.btn.k-ew{border-color:#d985a5;color:#6b2140}
+.klegend{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.kchip{display:inline-block;border-radius:12px;padding:2px 10px;font-size:12.5px;border:1px solid rgba(0,0,0,.15);color:#333}
+.sptable{width:100%;border-collapse:collapse;margin:6px 0 10px;font-size:14px}.sptable th{text-align:left;padding:6px 8px;border-bottom:2px solid #1F5D3A}.sptable td{padding:6px 8px;border-bottom:1px solid rgba(0,0,0,.08)}.sptable td:last-child,.sptable th:last-child{text-align:right}
 .btn.right{background:#1F5D3A;color:#fff;opacity:1!important}.btn.wrong{border-color:#c0392b;color:#c0392b;opacity:1!important;text-decoration:line-through}
 .scores{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px}
 .sc{background:#fff;border:1px solid #cfddd3;border-radius:9px;padding:8px 12px}
@@ -20,7 +40,10 @@ header.top h1{font-family:Georgia,serif;font-size:22px;margin:0;color:#1F5D3A}
 .sc .n{font-weight:700}.sc .v{font-size:26px;font-weight:700;color:#1F5D3A}.sc .s{font-size:12.5px;color:#506357}
 .sc.mid{text-align:center;min-width:130px}
 .felt{background:#1F5D3A;border-radius:12px;padding:10px;color:#fff;margin-bottom:8px}
-.seats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.table{display:grid;grid-template-columns:minmax(82px,1fr) auto minmax(82px,1fr);grid-template-areas:". n ." "w c e" ". s .";gap:10px 12px;align-items:center;padding:14px 12px;border-radius:26px;background:radial-gradient(ellipse at center,#2b7d4f 0%,#1F5D3A 72%);box-shadow:inset 0 0 0 5px #17492d}
+.t-n{grid-area:n;justify-self:center}.t-w{grid-area:w;justify-self:start}.t-e{grid-area:e;justify-self:end}.t-s{grid-area:s;justify-self:center}.table .center{grid-area:c;flex-direction:column;align-items:center;gap:8px}
+.table .seat{min-width:88px;padding:8px 12px}.piles{display:flex;gap:18px;justify-content:center;align-items:flex-start;flex-wrap:wrap}.deadr{font-size:13px;text-align:center;opacity:.95}.cap{background:#ffb74d;color:#1d2a22;border-radius:12px;padding:6px 12px;font-size:14px;font-weight:600;max-width:360px;text-align:center;box-shadow:0 0 0 3px rgba(255,152,0,.45)}.cap div{margin:1px 0}
+@media(min-width:700px){.table{grid-template-columns:minmax(130px,1fr) auto minmax(130px,1fr);padding:18px 24px}.table .seat{min-width:120px;padding:10px 16px;font-size:15px}.table .seat .b{font-size:13px}}
 .seat{background:rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;text-align:center;font-size:13.5px}
 .seat.cur{background:#f2c94c;color:#1d2a22;font-weight:700}
 .seat .b{font-size:12px;opacity:.85}
@@ -47,6 +70,15 @@ header.top h1{font-family:Georgia,serif;font-size:22px;margin:0;color:#1F5D3A}
 .pile.click{cursor:pointer}.pile.click:hover .card{outline:3px solid #f2c94c}.meld.tgt:hover{border-color:#2d8cf0;background:#eaf3ff}
 .meld .ml{font-size:12px;margin-bottom:2px;color:#33463a}
 .meld .cs{display:flex}.meld .cs .card{margin-right:-14px}
+.melds .card.mini,.threes .card.mini{width:42px;height:60px;font-size:16px;padding:2px 3px;border-radius:6px}
+.melds .card.mini .s,.threes .card.mini .s{font-size:19px;margin-top:-1px}
+.melds .card.mini span[style],.threes .card.mini span[style]{font-size:11px!important}
+.meld{padding:6px 9px}.meld .ml{font-size:15px;margin-bottom:4px}.meld .cs .card{margin-right:-15px}.threes{font-size:16px}.threes .card.mini{margin-right:4px}
+@media(min-width:1000px){
+  .melds .card.mini,.threes .card.mini{width:50px;height:72px;font-size:19px}
+  .melds .card.mini .s,.threes .card.mini .s{font-size:22px}
+  .meld .ml{font-size:16.5px}.meld .cs .card{margin-right:-18px}.meld{padding:8px 11px}.melds{gap:12px}
+}
 .threes{display:flex;gap:2px;align-items:center;font-size:12px;color:#33463a}
 .empty{color:#7a8a80;font-size:13px}
 .bar{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
@@ -58,10 +90,26 @@ header.top h1{font-family:Georgia,serif;font-size:22px;margin:0;color:#1F5D3A}
 .notice.hint{background:#fff1de;border-left:5px solid #f2994a}
 .hand{padding:14px 6px 4px;min-height:96px}
 .feed{font-size:13px;color:#33463a;max-height:140px;overflow:auto}
-.feed div{padding:1px 0}
+.feed div{padding:3px 0 3px 8px;border-left:4px solid #d5ddd8;margin-bottom:2px}.feed div.m{border-left-color:#1F5D3A}.feed div.o{border-left-color:#9a4b3c}
+@media(min-width:1000px){
+  #app{max-width:1420px}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+  .logcol{position:sticky;top:10px}
+  .logcol .panel{margin-bottom:0}
+  .logcol .feed{max-height:calc(100vh - 90px);min-height:300px;font-size:14px}
+}
 .stage{border:2px dashed #7B4FB0;border-radius:8px;padding:6px 8px;margin:6px 0;background:#f6f1fb}
 .modalbg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow:auto;z-index:50}
 .modal{background:#fff;border-radius:12px;max-width:760px;width:100%;padding:16px 20px}
+.modal.guide{max-width:1020px}.ghead{display:flex;justify-content:space-between;align-items:center;gap:10px}.ghead h2{margin:0}
+.gbody{display:flex;gap:16px;margin-top:10px}.gnavs{width:215px;flex:none;position:sticky;top:0;align-self:flex-start;max-height:82vh;overflow:auto;display:flex;flex-direction:column;gap:2px}
+.gnav{text-align:left;border:0;background:none;color:#1F5D3A;padding:6px 8px;border-radius:6px;cursor:pointer;font:inherit;font-size:13.5px}.gnav.on{background:#1F5D3A;color:#fff}.gnav:hover:not(.on){background:#e4efe8}
+.gtext{flex:1;min-width:0;font-size:15px;line-height:1.5}.gtext h2.ch{font-family:Georgia,serif;color:#1F5D3A;font-size:25px;margin:0 0 10px;padding-bottom:6px;border-bottom:3px solid #1F5D3A}
+.gtext h3{font-family:Georgia,serif;color:#2E7D4F;font-size:18px;margin:16px 0 4px}.gtext p{margin:7px 0}.gtext ul,.gtext ol{margin:7px 0 7px 22px;padding:0}.gtext li{margin:3px 0}
+.gtext table{border-collapse:collapse;width:100%;margin:10px 0;font-size:14px}.gtext th{background:#1F5D3A;color:#fff;text-align:left;padding:6px 10px}.gtext td{padding:6px 10px;border-bottom:1px solid #cfddd3}.gtext tr:nth-child(even) td{background:#f3f7f4}
+.gtext .note{border-left:6px solid;padding:9px 13px;margin:11px 0;border-radius:4px;font-size:14px}.gtext .note.tip{background:#E8F3EC;border-color:#2E7D4F}.gtext .note.remember{background:#EAF0FA;border-color:#3A63B0}.gtext .note.warn{background:#FBE9E7;border-color:#C0392B}.gtext .note.check{background:#FFF4D6;border-color:#C98A00}.gtext .note.diff{background:#EFE9F7;border-color:#7B4FB0}
+.gpager{display:flex;justify-content:space-between;margin-top:14px}
+@media(max-width:760px){.gbody{flex-direction:column}.gnavs{width:auto;flex-direction:row;flex-wrap:wrap;position:static;max-height:none}}
 .modal h2{margin:0 0 8px;font-family:Georgia,serif;color:#1F5D3A}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 table.sb{width:100%;border-collapse:collapse;font-size:13.5px}
@@ -80,6 +128,9 @@ table.sb tr.tot td{font-weight:700;border-top:2px solid #1F5D3A}
 /*DRILLS*/
 </script>
 <script>
+/*GUIDE*/
+</script>
+<script>
 /* ===== UI ===== */
 let game, rs, sel = new Set(), staged = [], hintIds = new Set(), hintText = '', notice = null, feed = [], modal = null, aiBusy = false;
 let gen = 0, hintTarget = null, warned3 = -1;
@@ -87,31 +138,309 @@ const ORDER = NAT.concat(['2','JK']);
 const esc = s => String(s).replace(/[&<>]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[ch]);
 const fmt = n => (n < 0 ? '−' : (n > 0 ? '+' : '')) + Math.abs(n).toLocaleString();
 
-function startGame(){ gen++; game = newGame(); feed = []; nextRound(); }
+let screen = 'home';
+function startGame(){ gen++; stopVoice(); screen = 'game'; game = newGame(); feed = []; nextRound(); }
+function goHome(){ gen++; stopVoice(); aiBusy = false; modal = null; screen = 'home'; render(); }
+function continueGame(){
+  screen = 'game'; modal = null;
+  if (rs && rs.ended){ modal = 'round'; render(); } else if (rs && rs.pendingAsk){ modal = 'ask'; render(); } else { render(); loop(); }
+}
+function playFromHome(){ if (game && !game.over) continueGame(); else startGame(); }
 function nextRound(){
-  gen++; rs = newRound(game); sel.clear(); staged = []; hintIds.clear(); hintText = ''; hintTarget = null; notice = null; modal = null;
+  gen++; stopVoice(); rs = newRound(game); rs.interactive = true; askArmed = false; caption = null; shownSeat = rs.current; hlTurn = -1; resetHandOrder(); sel.clear(); staged = []; hintIds.clear(); hintText = ''; hintTarget = null; notice = null; modal = null;
   addFeed(rs.log[0]); render(); loop();
 }
-function addFeed(t){ if (t){ feed.push(t); if (feed.length > 60) feed.shift(); } }
-function say(text, kind){ notice = {text, kind: kind || 'info'}; }
+/* ===== VOICE: reads actions aloud with the browser's speech engine ===== */
+let voiceOn = true;
+const SUITW = {'♠':'spades', '♥':'hearts', '♦':'diamonds', '♣':'clubs'}, RANKW = {A:'Ace', K:'King', Q:'Queen', J:'Jack', 2:'Two', 3:'Three', 4:'Four', 5:'Five', 6:'Six', 7:'Seven', 8:'Eight', 9:'Nine', 10:'Ten'}, PLURW = {2:'twos', 3:'threes', 4:'fours', 5:'fives', 6:'sixes', 7:'sevens', 8:'eights', 9:'nines', 10:'tens'};
+const canSpeak = () => typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance !== 'undefined';
+function spoken(t){
+  return String(t).replace(/\b(10|[2-9AKQJ])([♠♥♦♣])/g, (m, r, s) => (RANKW[r] || r) + ' of ' + SUITW[s])
+    .replace(/\b(10|[2-9])s\b/g, (m, r) => PLURW[r]).replace(/\s*\(now (\d+) cards\)/g, ', now $1 cards').replace(/−/g, 'minus ').replace(/&/g, 'and').replace(/\(partner\)/g, '').replace(/\s+/g, ' ');
+}
+let voiceName = '', voiceRate = 0.8;
+const NOVELTY = /Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Good News|Hysterical|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Fred|Junior|Ralph|Kathy/i;
+function voiceScore(v){
+  let s = 0; const n = v.name + ' ' + (v.voiceURI || '');
+  if (/Natural|Neural|Online/i.test(n)) s += 100;
+  if (/Premium|Enhanced|Siri/i.test(n)) s += 90;
+  if (/Google/i.test(n)) s += 60;
+  if (/Samantha|Ava|Allison|Susan|Zoe|Evan|Nathan|Daniel|Karen|Moira|Serena|Aria|Jenny|Guy|Libby|Sonia/i.test(n)) s += 50;
+  if (/en[-_]US/i.test(v.lang)) s += 10;
+  return s;
+}
+function goodVoices(){
+  if (!canSpeak()) return [];
+  try { return speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang) && !NOVELTY.test(v.name)).sort((a, b) => voiceScore(b) - voiceScore(a)).slice(0, 3); } catch (e) { return []; }
+}
+/* We count our own utterances instead of trusting speechSynthesis.speaking, which many voices report too early. */
+let speechBusy = 0, speechGen = 0, speechEnd = 0;
+function speak(t, interrupt){
+  if (!voiceOn || !canSpeak() || !t) return;
+  try {
+    if (interrupt){ speechSynthesis.cancel(); speechGen++; speechBusy = 0; speechEnd = 0; }
+    const text = spoken(t), u = new SpeechSynthesisUtterance(text); u.rate = voiceRate;
+    const vs = goodVoices(), v = vs.find(x => x.name === voiceName) || vs[0]; if (v){ u.voice = v; u.lang = v.lang; }
+    const gen0 = speechGen; let finished = false;
+    const done = () => { if (finished) return; finished = true; if (gen0 === speechGen) speechBusy = Math.max(0, speechBusy - 1); };
+    u.onend = done; u.onerror = done; speechBusy++;
+    const now = Date.now(); speechEnd = Math.max(now, speechEnd) + text.length * 95 / Math.max(0.4, voiceRate) + 800;   // safety net if the browser never reports the end
+    setTimeout(done, speechEnd - now + 1500);
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+/* ===== SETTINGS (saved in the browser when it allows) ===== */
+const SPEEDS = {slow:['Slow', 3200], relaxed:['Relaxed', 2000], normal:['Normal', 1000], fast:['Fast', 450]};
+const LEVELS = {beginner:['Beginner', 'West and East play carelessly: they skip melds, rarely take the pack and toss cards that help you.'],
+  intermediate:['Intermediate', 'West and East play a decent game with the occasional slip.'],
+  advanced:['Advanced', 'West and East play their best: they block what you need and take every chance to meld or go out.']};
+let speedKey = 'relaxed', levelKey = 'beginner', musicVol = 0.5, musicStyle = 'bouncy';
+const aiDelay = () => SPEEDS[speedKey][1];
+let nameDraft = 'Player';
+function saveName(){
+  const el = document.getElementById('pname'), v = (el ? el.value : nameDraft).trim().slice(0, 20);
+  if (!v){ const m = document.getElementById('namemsg'); if (m) m.textContent = 'Please type a name first.'; return; }
+  playerName = nameDraft = v; saveSettings();
+  const m = document.getElementById('namemsg'); if (m) m.textContent = 'Saved as ' + v;
+  const sc = document.getElementById('plname'); if (sc) sc.textContent = v;
+}
+function saveSettings(){ try { localStorage.setItem('canastaSettings', JSON.stringify({speedKey, levelKey, musicVol, musicStyle, voiceOn, voiceName, voiceRate, playerName})); } catch (e) {} }
+function loadSettings(){
+  try {
+    const s = JSON.parse(localStorage.getItem('canastaSettings') || 'null'); if (!s) return;
+    if (SPEEDS[s.speedKey]) speedKey = s.speedKey; if (LEVELS[s.levelKey]) levelKey = s.levelKey;
+    if (s.musicStyle && typeof s.musicStyle === 'string' && s.musicStyle in MUSIC) musicStyle = s.musicStyle;
+    if (typeof s.musicVol === 'number') musicVol = Math.min(1, Math.max(0, s.musicVol));
+    if (typeof s.voiceOn === 'boolean') voiceOn = s.voiceOn; if (typeof s.voiceName === 'string') voiceName = s.voiceName;
+    if (typeof s.playerName === 'string' && s.playerName.trim()) playerName = nameDraft = s.playerName.trim().slice(0, 20);
+    if (typeof s.voiceRate === 'number') voiceRate = Math.min(1.3, Math.max(0.4, s.voiceRate));
+  } catch (e) {}
+  setAiLevel(levelKey);
+}
+/* ===== BACKGROUND MUSIC: a soft jazzy loop made live with the Web Audio API (no files needed) ===== */
+const MU = {on:false, ctx:null, master:null, timer:null, step:0, nextT:0};
+const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+function muTone(freq, t, dur, type, gain, att, rel){
+  const c = MU.ctx, o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(gain, t + att); g.gain.setValueAtTime(gain, t + Math.max(att, dur)); g.gain.linearRampToValueAtTime(0.0001, t + dur + rel);
+  o.connect(g); g.connect(MU.bus); o.start(t); o.stop(t + dur + rel + 0.05);
+}
+function muNoise(t, dur, gain, hp){   // soft shaker / hi-hat
+  try {
+    const c = MU.ctx; if (!MU.noiseBuf){ MU.noiseBuf = c.createBuffer(1, Math.floor(c.sampleRate * 0.4), c.sampleRate); const d = MU.noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = MU.noiseBuf; f.type = 'highpass'; f.frequency.value = hp || 6000;
+    g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f); f.connect(g); g.connect(MU.bus); s.start(t); s.stop(t + dur + 0.02);
+  } catch (e) {}
+}
+const pick1 = a => a[Math.floor(Math.random() * a.length)];
+/* each style: tempo, and a function that plays one eighth-note step of a 4/4 bar (pos 0..7) */
+const MUSIC = {
+  bouncy: {label:'Cute & bouncy', bpm:132, step(t, pos, bar, e){
+    const CH = [{b:48, tri:[60,64,67]}, {b:43, tri:[62,67,71]}, {b:45, tri:[60,64,69]}, {b:41, tri:[60,65,69]}], ch = CH[bar % 4];
+    const A = [[76,79,84,79,83,79,76,-1], [74,79,83,79,86,83,79,-1], [72,76,81,76,84,81,76,-1], [72,77,81,77,84,81,77,79]];
+    const B = [[84,-1,79,-1,76,79,84,-1], [83,-1,79,-1,74,79,83,-1], [81,-1,76,-1,72,76,81,-1], [77,81,84,81,77,-1,79,-1]];
+    const m = ((bar >> 2) % 2 ? B : A)[bar % 4][pos];
+    if (m > 0){ muTone(mtof(m), t, 0.1, 'sine', 0.085, 0.004, 0.32); muTone(mtof(m + 12), t, 0.05, 'sine', 0.022, 0.004, 0.2); }
+    if (pos === 0 || pos === 4) muTone(mtof(ch.b), t, e * 0.8, 'triangle', 0.2, 0.01, 0.12);
+    if (pos === 2 || pos === 6) ch.tri.forEach(n => muTone(mtof(n), t, 0.07, 'triangle', 0.045, 0.005, 0.1));
+    if (pos % 2 === 1) muNoise(t, 0.05, 0.03, 7000);
+  }},
+  sunny: {label:'Sunny strum', bpm:116, step(t, pos, bar, e){
+    const CH = [{b:43, n:[55,59,62,67]}, {b:50, n:[57,62,66,69]}, {b:52, n:[55,59,64,67]}, {b:48, n:[55,60,64,67]}], ch = CH[bar % 4];
+    const down = {0:1, 3:1, 6:1}, up = {4:1, 7:1};
+    if (down[pos]) ch.n.forEach((n, i) => muTone(mtof(n), t + i * 0.018, 0.22, 'triangle', 0.075, 0.004, 0.25));
+    if (up[pos]) ch.n.slice().reverse().forEach((n, i) => muTone(mtof(n), t + i * 0.014, 0.12, 'triangle', 0.05, 0.004, 0.18));
+    if (pos === 0 || pos === 4) muTone(mtof(ch.b), t, e * 1.3, 'triangle', 0.2, 0.01, 0.15);
+    if (pos === 0 || pos === 3 || pos === 6){ const m = ch.n[Math.floor(Math.random() * ch.n.length)] + 12; muTone(mtof(m), t, e * 2.2, 'sine', 0.05, 0.03, 0.3); muTone(mtof(m) * 1.004, t, e * 2.2, 'sine', 0.04, 0.03, 0.3); }
+    if (pos === 2 || pos === 6) muNoise(t, 0.08, 0.05, 5000);
+  }},
+  jazzy: {label:'Jazzy lounge', bpm:112, step(t0, pos, bar, e){
+    /* swung eighths, ii-V-I-VI turnaround in C, walking bass, electric-piano comping, brush ride and a wandering sax-like lead */
+    const CH = [
+      {bass:[38,41,45,42], v:[53,57,60,64], sc:[62,65,67,69,72,74,76,77]},    // Dm7
+      {bass:[43,47,50,47], v:[53,59,62,65], sc:[67,69,71,72,74,76,77,79]},    // G7
+      {bass:[48,52,55,46], v:[52,55,59,62], sc:[72,74,76,79,81,83,84,76]},    // Cmaj7
+      {bass:[45,49,52,50], v:[55,61,64,69], sc:[69,71,73,76,79,81,73,76]}     // A7
+    ], ch = CH[bar % 4], t = t0 + (pos % 2 === 1 ? e * 0.3 : 0);
+    if (pos % 2 === 0) muTone(mtof(ch.bass[pos / 2]), t, e * 1.5, 'triangle', 0.24, 0.01, 0.18);
+    if (pos === 0 || pos === 3 || (pos === 6 && Math.random() < 0.5)) ch.v.forEach(n => { muTone(mtof(n), t, e * 1.3, 'sine', 0.05, 0.006, 0.3); muTone(mtof(n + 12), t, e * 0.8, 'sine', 0.014, 0.006, 0.2); });
+    if ([0, 2, 3, 4, 6, 7].includes(pos)) muNoise(t, 0.07, pos % 4 === 0 ? 0.04 : 0.028, 9000);
+    if (pos === 2 || pos === 6) muNoise(t, 0.11, 0.035, 3200);
+    if (Math.random() < ([0, 2, 3, 5, 7].includes(pos) ? 0.5 : 0.15)){
+      MU.mel = Math.max(0, Math.min(ch.sc.length - 1, (MU.mel == null ? 3 : MU.mel) + pick1([-2, -1, -1, 1, 1, 2])));
+      const n = ch.sc[MU.mel]; muTone(mtof(n), t, e * 1.4, 'triangle', 0.06, 0.02, 0.28); muTone(mtof(n) * 1.005, t, e * 1.4, 'sine', 0.025, 0.02, 0.28);
+    }
+  }},
+  ragtime: {label:'Ragtime parlor', bpm:122, step(t, pos, bar, e){
+    /* honky-tonk piano: stride left hand (bass, chord, fifth, chord) and a syncopated right hand */
+    const SEQ = ['C', 'E7', 'A7', 'D7', 'G7', 'C', 'G7', 'C'];
+    const CH = {C:{b:36, f:43, c:[60,64,67], m:[76,79,-1,84,79,-1,76,79]}, E7:{b:40, f:47, c:[59,62,68], m:[76,80,-1,83,80,-1,76,80]},
+      A7:{b:45, f:52, c:[61,64,67], m:[73,76,-1,81,76,-1,73,76]}, D7:{b:38, f:45, c:[60,66,69], m:[74,78,-1,81,78,-1,74,78]}, G7:{b:43, f:50, c:[59,62,65], m:[74,79,-1,83,79,-1,74,77]}};
+    const ch = CH[SEQ[bar % 8]], hk = (n, dur, g) => { muTone(mtof(n), t, dur, 'triangle', g, 0.004, 0.18); muTone(mtof(n) * 1.007, t, dur, 'sine', g * 0.6, 0.004, 0.15); };
+    if (pos === 0) hk(ch.b, 0.2, 0.2); if (pos === 4) hk(ch.f, 0.2, 0.17);
+    if (pos === 2 || pos === 6) ch.c.forEach(n => hk(n, 0.09, 0.06));
+    const m = ch.m[pos]; if (m > 0) hk(m + (bar % 8 >= 4 && pos % 3 === 0 ? 12 : 0), 0.13, 0.09);
+  }},
+  bossa: {label:'Bossa nova', bpm:112, step(t, pos, bar, e){
+    const CH = [{b:45, f:40, v:[52,55,60,64], sc:[69,72,74,76,79,81]}, {b:38, f:33, v:[53,57,60,64], sc:[69,72,74,77,79,81]},
+      {b:43, f:38, v:[53,59,62,65], sc:[67,71,74,76,77,79,83]}, {b:48, f:43, v:[52,55,59,62], sc:[72,76,79,81,83,84]}], ch = CH[bar % 4];
+    if (pos === 0 || pos === 4) muTone(mtof(ch.b), t, e * 1.7, 'triangle', 0.22, 0.01, 0.2);
+    if (pos === 3 || pos === 7) muTone(mtof(ch.f), t, e * 1.2, 'triangle', 0.17, 0.01, 0.15);
+    if ([0, 3, 5, 6].includes(pos)) ch.v.forEach((n, i) => muTone(mtof(n), t + i * 0.006, 0.14, 'triangle', 0.05, 0.003, 0.2));
+    muNoise(t, 0.05, pos % 2 ? 0.032 : 0.018, 8000);
+    if (Math.random() < ([0, 2, 5, 7].includes(pos) ? 0.45 : 0.1)){
+      MU.mel = Math.max(0, Math.min(ch.sc.length - 1, (MU.mel == null ? 2 : MU.mel) + pick1([-2, -1, 1, 1, 2])));
+      muTone(mtof(ch.sc[MU.mel]), t, e * 1.5, 'sine', 0.075, 0.03, 0.3);
+    }
+  }},
+  lofi: {label:'Lo-fi chill', bpm:84, step(t, pos, bar, e){
+    const CH = [{b:38, v:[53,57,60,64,67]}, {b:43, v:[53,57,59,62,65]}, {b:48, v:[52,55,59,62,67]}, {b:45, v:[52,55,60,64,67]}], ch = CH[bar % 4];
+    if (pos === 0){ ch.v.forEach(n => { muTone(mtof(n), t, e * 7, 'sine', 0.04, 0.05, 1.0); muTone(mtof(n) * 1.006, t, e * 7, 'triangle', 0.018, 0.05, 1.0); }); }
+    if (pos === 0 || pos === 5) muTone(mtof(ch.b), t, e * 1.6, 'sine', 0.26, 0.01, 0.2);
+    if (pos === 0 || pos === 5) muTone(60, t, 0.1, 'sine', 0.2, 0.004, 0.1);        // soft kick
+    if (pos === 2 || pos === 6) muNoise(t, 0.13, 0.05, 2500);                       // snare
+    muNoise(t, 0.04, pos % 2 ? 0.026 : 0.016, 7500);                                // hats
+    if (Math.random() < 0.06) muNoise(t + Math.random() * e, 0.015, 0.05, 1500);     // vinyl crackle
+    if (Math.random() < ([2, 3, 6].includes(pos) ? 0.3 : 0.07)){
+      const sc = [69, 72, 74, 76, 79, 81]; muTone(mtof(pick1(sc) + (Math.random() < 0.3 ? 12 : 0)), t, e * 1.8, 'sine', 0.06, 0.02, 0.5);
+    }
+  }},
+  polka: {label:'Polka', bpm:152, step(t, pos, bar, e){
+    const SEQ = [{b:36, f:43, c:[60,64,67], m:[79,76,79,84,83,79,76,79]}, {b:43, f:50, c:[59,62,65], m:[74,77,79,83,86,83,79,77]},
+      {b:36, f:43, c:[60,64,67], m:[84,83,79,76,79,83,84,79]}, {b:41, f:48, c:[60,65,69], m:[77,81,84,81,77,81,84,81]},
+      {b:36, f:43, c:[60,64,67], m:[79,79,84,84,83,79,81,83]}, {b:43, f:50, c:[59,62,65], m:[86,83,79,83,74,77,79,83]}, {b:36, f:43, c:[60,64,67], m:[84,79,76,79,84,-1,84,-1]}, {b:36, f:43, c:[60,64,67], m:[79,-1,76,-1,72,-1,-1,-1]}];
+    const ch = SEQ[bar % 8];
+    if (pos === 0) muTone(mtof(ch.b), t, e * 1.5, 'triangle', 0.24, 0.008, 0.1); if (pos === 4) muTone(mtof(ch.f), t, e * 1.5, 'triangle', 0.2, 0.008, 0.1);
+    if (pos === 2 || pos === 6) ch.c.forEach(n => muTone(mtof(n), t, 0.09, 'triangle', 0.05, 0.004, 0.08));
+    const m = ch.m[pos]; if (m > 0){ muTone(mtof(m), t, e * 0.85, 'sawtooth', 0.028, 0.006, 0.07); muTone(mtof(m) * 1.005, t, e * 0.85, 'square', 0.014, 0.006, 0.07); }
+    if (pos % 2 === 1) muNoise(t, 0.04, 0.03, 6500);
+  }},
+  waltz: {label:'Waltz', bpm:132, steps:6, step(t, pos, bar, e){
+    const CH = [{b:36, c:[60,64,67], m:[84,-1,79,83,-1,79]}, {b:33, c:[60,64,69], m:[81,-1,76,81,-1,84]}, {b:41, c:[60,65,69], m:[84,-1,81,77,-1,81]}, {b:43, c:[59,62,67], m:[83,-1,79,74,-1,79]}], ch = CH[bar % 4];
+    if (pos === 0) muTone(mtof(ch.b), t, e * 2.2, 'triangle', 0.24, 0.01, 0.2);
+    if (pos === 2 || pos === 4) ch.c.forEach(n => muTone(mtof(n), t, 0.1, 'triangle', 0.045, 0.005, 0.12));
+    const m = ch.m[pos]; if (m > 0){ muTone(mtof(m), t, e * (pos % 2 ? 0.9 : 1.8), 'sine', 0.085, 0.01, 0.3); muTone(mtof(m + 12), t, e * 0.5, 'sine', 0.02, 0.01, 0.2); }
+  }},
+  arcade: {label:'Arcade', bpm:148, step(t, pos, bar, e){
+    const CH = [{b:36, n:[60,64,67,72]}, {b:33, n:[57,60,64,69]}, {b:29, n:[60,65,69,72]}, {b:31, n:[59,62,67,71]}], ch = CH[bar % 4];
+    const arp = [0, 1, 2, 3, 2, 1, 2, 3][pos];
+    muTone(mtof(ch.n[arp] + 12), t, e * 0.7, 'square', 0.03, 0.004, 0.06);
+    if (pos % 2 === 0) muTone(mtof(ch.b + 12), t, e * 1.6, 'square', 0.05, 0.004, 0.06);
+    if (pos === 0 || pos === 4) muTone(95, t, 0.08, 'sine', 0.2, 0.004, 0.08);
+    if (pos % 2 === 1) muNoise(t, 0.04, 0.035, 8000);
+    if (Math.random() < 0.55){ const sc = [72, 76, 79, 81, 84, 88]; muTone(mtof(pick1(sc) + (pos > 4 ? 0 : 12)), t, e * 0.8, 'square', 0.035, 0.004, 0.05); }
+  }},
+  mellow: {label:'Mellow (slow)', bpm:76, step(t, pos, bar, e){
+    const PR = [[48,52,55,59], [45,48,52,55], [41,45,48,52], [43,47,50,53]], chord = PR[bar % 4];
+    if (pos === 0){ chord.forEach(n => muTone(mtof(n + 12), t, e * 8, 'sine', 0.035, 0.7, 1.2)); muTone(mtof(chord[0] - 12), t, e * 3, 'triangle', 0.16, 0.03, 0.5); }
+    if (pos === 4) muTone(mtof(chord[2] - 12), t, e * 2, 'triangle', 0.1, 0.03, 0.4);
+    if (Math.random() < 0.62){ const n = chord[Math.floor(Math.random() * chord.length)] + 24 + (Math.random() < 0.25 ? 12 : 0); muTone(mtof(n), t, 0.08, 'sine', 0.07, 0.01, 0.7); }
+  }}
+};
+function muSchedule(){
+  const c = MU.ctx, st = MUSIC[musicStyle] || MUSIC.bouncy, eighth = 60 / st.bpm / 2, per = st.steps || 8;
+  while (MU.nextT < c.currentTime + 0.7){
+    try { st.step(MU.nextT, MU.step % per, Math.floor(MU.step / per), eighth); } catch (e) {}
+    MU.nextT += eighth; MU.step++;
+  }
+}
+function musicStart(){
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+  try {
+    if (!MU.ctx){
+      MU.ctx = new AC(); MU.master = MU.ctx.createGain(); MU.bus = MU.ctx.createGain();
+      const lp = MU.ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2200;
+      const dl = MU.ctx.createDelay(1.0); dl.delayTime.value = 0.4; const fb = MU.ctx.createGain(); fb.gain.value = 0.32;
+      MU.bus.connect(lp); lp.connect(MU.master); lp.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(MU.master); MU.master.connect(MU.ctx.destination);
+    }
+    MU.master.gain.value = musicVol * 0.5; if (MU.ctx.resume) MU.ctx.resume();
+    MU.nextT = MU.ctx.currentTime + 0.1; MU.step = 0; clearInterval(MU.timer); MU.timer = setInterval(muSchedule, 200); muSchedule(); MU.on = true; return true;
+  } catch (e) { MU.on = false; return false; }
+}
+function musicStop(){ MU.on = false; clearInterval(MU.timer); try { if (MU.master) MU.master.gain.value = 0; if (MU.ctx && MU.ctx.suspend) MU.ctx.suspend(); } catch (e) {} }
+function setMusic(on){ if (on){ if (!musicStart()) say('Background music is not supported in this browser.', 'err'); } else musicStop(); }
+function setVolume(v){ musicVol = v; if (MU.master) MU.master.gain.value = v * 0.5; saveSettings(); }
+function seg(key, cur, vals, labels){ return vals.map(v => `<button class="btn ${cur === v ? 'primary' : ''}" data-set="${key}" data-val="${v}">${labels[v]}</button>`).join(' '); }
+function settingsModal(){
+  const vs = goodVoices(), cur = (vs.find(x => x.name === voiceName) || vs[0] || {}).name;
+  const opts = vs.length ? vs.map(v => `<option value="${esc(v.name)}" ${v.name === cur ? 'selected' : ''}>${esc(v.name)} (${esc(v.lang)})</option>`).join('') : '<option>No English voices found on this device</option>';
+  const spl = {}; Object.keys(SPEEDS).forEach(k => spl[k] = SPEEDS[k][0]); const lvl = {}; Object.keys(LEVELS).forEach(k => lvl[k] = LEVELS[k][0]);
+  return `<div class="modalbg"><div class="modal"><h2>Settings</h2>
+  <div class="panel"><h3>Player name</h3><p>Shown on the score card and used on the leaderboard.</p><p><input id="pname" maxlength="20" value="${esc(nameDraft)}" placeholder="Your name" style="padding:7px;font-size:15px;width:55%"> <button class="btn primary" data-act="savename">Save name</button> <span id="namemsg" class="empty">${nameDraft.trim() && nameDraft.trim() === playerName ? 'Saved as ' + esc(playerName) : ''}</span></p></div>
+  <div class="panel"><h3>Game pace</h3><p>How long the computer players pause before each move.</p><p>${seg('speed', speedKey, Object.keys(SPEEDS), spl)}</p></div>
+  <div class="panel"><h3>Difficulty</h3><p>${seg('level', levelKey, Object.keys(LEVELS), lvl)}</p><p class="empty">${LEVELS[levelKey][1]} Your partner North always plays well. A new level applies from the next computer move.</p></div>
+  <div class="panel"><h3>Audio narration</h3><p>${seg('voice', voiceOn ? 'on' : 'off', ['on', 'off'], {on:'On', off:'Off'})} <button class="btn gold" data-act="vtest">Test voice</button></p>
+  <p><select id="vsel" style="width:100%;padding:8px;font-size:15px">${opts}</select></p>
+  <p><label>Voice speed (1.00 = normal, lower is slower) <input type="range" id="vrate" min="0.4" max="1.3" step="0.05" value="${voiceRate}" style="vertical-align:middle;width:50%"> <span id="vratev">${voiceRate.toFixed(2)}x</span></label></p>
+  <p class="empty">Only the 3 best-sounding voices on your device are shown (names with "Natural", "Premium", "Enhanced" or "Siri" rank first). On a Mac you can download better voices in System Settings, Accessibility, Spoken Content. In Microsoft Edge, try the "Natural" voices.</p></div>
+  <div class="panel"><h3>Background music</h3><p>${seg('music', MU.on ? 'on' : 'off', ['on', 'off'], {on:'On', off:'Off'})}</p>
+  <p>Style: <select id="mstyle" style="padding:7px;font-size:15px">${Object.keys(MUSIC).map(k => `<option value="${k}" ${k === musicStyle ? 'selected' : ''}>${MUSIC[k].label}</option>`).join('')}</select></p>
+  <p><label>Volume <input type="range" id="mvol" min="0" max="1" step="0.05" value="${musicVol}" style="vertical-align:middle;width:50%"></label></p></div>
+  <button class="btn primary" data-act="closemodal">Close</button></div></div>`;
+}
+if (canSpeak()) speechSynthesis.onvoiceschanged = () => { if (modal === 'settings') render(); };
+document.addEventListener('change', e => { if (e.target.id === 'vsel'){ voiceName = e.target.value; saveSettings(); speak('You drew Ace of diamonds.', true); } });
+document.addEventListener('change', e => { if (e.target.id === 'mstyle') applySetting('mstyle', e.target.value); });
+document.addEventListener('input', e => { if (e.target.id === 'mvol') setVolume(+e.target.value); if (e.target.id === 'pname'){ nameDraft = e.target.value; const m = document.getElementById('namemsg'); if (m) m.textContent = ''; } });
+document.addEventListener('keydown', e => { if (e.target.id === 'pname' && e.key === 'Enter'){ e.preventDefault(); saveName(); } });
+document.addEventListener('input', e => { if (e.target.id === 'vrate'){ voiceRate = +e.target.value; const s = document.getElementById('vratev'); if (s) s.textContent = voiceRate.toFixed(2) + 'x'; } });
+document.addEventListener('change', e => { if (e.target.id === 'vrate'){ saveSettings(); speak('You drew Ace of diamonds.', true); } });
+function stopVoice(){ if (canSpeak()) try { speechSynthesis.cancel(); } catch (e) {} }
+function applySetting(key, val){
+  if (key === 'speed' && SPEEDS[val]) speedKey = val;
+  else if (key === 'level' && LEVELS[val]){ levelKey = val; setAiLevel(val); }
+  else if (key === 'voice'){ voiceOn = val === 'on'; stopVoice(); if (voiceOn) speak('Narration on.'); }
+  else if (key === 'music') setMusic(val === 'on');
+  else if (key === 'mstyle' && MUSIC[val]){ musicStyle = val; if (MU.on && MU.ctx){ MU.step = 0; MU.nextT = MU.ctx.currentTime + 0.1; } }
+  saveSettings(); render();
+}
+let lastFeedAt = 0;
+function addFeed(t){
+  if (!t) return;
+  feed.push(t); if (feed.length > 60) feed.shift();
+  const now = Date.now(), fresh = now - lastFeedAt > 800; lastFeedAt = now;   // a new action cuts off old chatter; lines in the same action queue up
+  speak(t, fresh && /^You /.test(t));
+}
+function drainAlerts(){ if (rs && rs.alerts && rs.alerts.length) rs.alerts.splice(0).forEach(addFeed); }
+function whenQuiet(go, ok = () => true, tries = 0){   // let the narrator finish before the computer moves again
+  if (!ok()) return;
+  if (voiceOn && canSpeak() && speechBusy > 0 && tries < 150) return void setTimeout(() => whenQuiet(go, ok, tries + 1), 200);
+  go();
+}
+function say(text, kind){ notice = {text, kind: kind || 'info'}; if (kind === 'err' || /^Special hand detected/.test(text)) speak(text, true); }
 function clearHint(){ hintIds.clear(); hintText = ''; hintTarget = null; }
 function loop(){
   if (!rs || rs.ended) return;
+  newIds.clear();   // (not acted(): this is just a turn change)
   if (rs.current !== 0){
     aiBusy = true; render();
     const myRs = rs, seat = rs.current, g = gen;
-    setTimeout(() => {
-      if (g !== gen || rs !== myRs || rs.ended || rs.current !== seat) return; // stale timer (new game/round started)
-      const log = aiTurn(rs, seat); log.forEach(addFeed); aiBusy = false; afterAction();
-    }, 850);
+    const valid = () => g === gen && rs === myRs && !rs.ended && rs.current === seat;   // false if a new game/round started
+    // 1) wait until the voice has finished talking about the last move, 2) light up the next player and pause for the chosen pace, 3) play the move
+    whenQuiet(() => { shownSeat = seat; render(); setTimeout(() => {
+      if (!valid()) return;
+      hlTurn = rs.turnNo;
+      const log = aiTurn(rs, seat); log.forEach(addFeed);
+      const mel = log.filter(l => /added|started a|opened|picked up the pack|completed|went out|declared|laid down|asks/.test(l));
+      caption = mel.length ? mel : null;
+      if (rs.pendingAsk){ modal = 'ask'; render(); return; }   // North is asking you: wait for your answer
+      aiBusy = false; afterAction();
+    }, aiDelay()); }, valid);
   } else {
     aiBusy = false;
+    const myRs2 = rs, g2 = gen; whenQuiet(() => { if (shownSeat !== 0){ shownSeat = 0; render(); } }, () => g2 === gen && rs === myRs2 && !rs.ended && rs.current === 0);
     if (rs.justTalon){ addFeed(`You picked up your talon (${rs.justTalon} cards).`); say(`Your talon (${rs.justTalon} cards) is now in your hand.`, 'info'); rs.justTalon = 0; }
     render();
   }
 }
 function afterAction(){ if (rs.ended){ finishRound(); return; } loop(); }
-function finishRound(){ aiBusy = false; clearHint(); notice = null; unstageSilently(); if (modal !== 'drills') modal = 'round'; render(); }
+function finishRound(){
+  aiBusy = false; clearHint(); notice = null; unstageSilently(); if (modal !== 'drills') modal = 'round'; recordGame(); render();
+  try { const t = rs.result.teams; speak(`Round ${game.round} over. You and North scored ${t[0].total}. West and East scored ${t[1].total}.` + (game.over ? ` ${TEAM_NAMES[game.winner]} win the game!` : '')); } catch (e) {}
+}
 const myTurn = ph => rs && !rs.ended && rs.current === 0 && !aiBusy && (!ph || rs.phase === ph);
 
 function unstageSilently(){ if (staged.length){ rs.hands[0].push(...staged.flat()); staged = []; } }
@@ -134,12 +463,12 @@ function doPack(){
   if (!info.ok){ say(info.why, 'err'); render(); return; }
   let r;
   if (info.mode === 'open'){
-    if (!staged.length){ say('To open with the pack, first stage your opening meld (select cards, click "Add to opening meld"). Then click "Pick up pack". The top card and a natural pair from your hand are added as a separate meld.', 'info'); render(); return; }
+    if (!staged.length){ say('To open with the pack, first stage your opening meld (select cards, click "Add to opening meld"). Then click "Pick up pack". The top card and a natural pair from your hand are added as a separate meld.', 'err'); render(); return; }
     r = pickPackOpening(rs, 0, staged);
     if (r.ok) staged = [];
   } else r = pickPack(rs, 0);
   if (!r.ok){ say(r.why, 'err'); render(); return; }
-  sel.clear(); addFeed(rs.log[rs.log.length - 1]); say('You picked up the pack. Meld if you can, then discard.', 'good'); render();
+  acted(); sel.clear(); addFeed(rs.log[rs.log.length - 1]); say('You picked up the pack. Meld if you can, then discard.', 'good'); render();
 }
 function doLay3(){
   if (!myTurn()) return;
@@ -147,10 +476,10 @@ function doLay3(){
   if (!rs.stock.length) unstageSilently();
   sel.clear();
   const r = layThrees(rs, 0);
-  if (!r.n && !r.ended){ say('You have no 3s to lay down.', 'info'); render(); return; }
+  if (!r.n && !r.ended){ say('You have no 3s to lay down.', 'err'); render(); return; }
   if (r.n) addFeed(`You laid down ${r.n} three${r.n > 1 ? 's' : ''}.`);
   if (rs.ended){ afterAction(); return; }
-  say(`Laid down ${r.n} three${r.n > 1 ? 's' : ''} and drew replacements.`, 'good'); render();
+  acted(); say(`Laid down ${r.n} three${r.n > 1 ? 's' : ''} and drew replacements.`, 'good'); render();
 }
 function doMeld(target){
   if (!myTurn()) return;
@@ -162,14 +491,14 @@ function doMeld(target){
     const chk = checkOpeningGroup(rs, cards);
     if (!chk.ok){ say(chk.why, 'err'); render(); return; }
     if (staged.some(g => g.some(c => !isWild(c) && c.rank === chk.rank))){ say('You already staged a group of that rank. Use "Undo staging", then select all of that rank together.', 'err'); render(); return; }
-    staged.push(cards); removeFromHandUI(cards); sel.clear();
+    acted(); staged.push(cards); removeFromHandUI(cards); sel.clear();
     const pts = staged.flat().reduce((a, c) => a + cardVal(c), 0);
     say(`Staged ${cards.length} cards. Opening meld so far: ${pts} of ${rs.needs[0]} points.`, 'info'); render(); return;
   }
   if (rs.phase !== 'play'){ say('Draw a card first.', 'err'); render(); return; }
   const r = playGroup(rs, 0, cards.map(c => c.id), target);
   if (!r.ok){ say(r.why, 'err'); render(); return; }
-  sel.clear(); addFeed(`You ${r.desc}.`); say(`You ${r.desc}.`, 'good'); render();
+  acted(); sel.clear(); addFeed(`You ${r.desc}.`); say(`You ${r.desc}.`, 'good'); render();
 }
 function removeFromHandUI(cards){ cards.forEach(c => { const i = rs.hands[0].findIndex(x => x.id === c.id); if (i >= 0) rs.hands[0].splice(i, 1); }); }
 function doCommit(){
@@ -177,7 +506,7 @@ function doCommit(){
   if (rs.phase !== 'play'){ say('Draw a card first (or use "Pick up pack" to open with the pack).', 'err'); render(); return; }
   const r = opening(rs, 0, staged);
   if (!r.ok){ say(r.why, 'err'); render(); return; }
-  staged = []; sel.clear(); addFeed(rs.log[rs.log.length - 1]); say(`Opening meld laid down: ${r.pts} points. You will get a talon after your discard if 9 or more cards remain in the draw pile.`, 'good'); render();
+  acted(); staged = []; sel.clear(); addFeed(rs.log[rs.log.length - 1]); say(`Opening meld laid down: ${r.pts} points. You will get a talon after your discard if 9 or more cards remain in the draw pile.`, 'good'); render();
 }
 function doUndo(){ if (!staged.length) return; rs.hands[0].push(...staged.flat()); staged = []; sel.clear(); say('Staging undone.', 'info'); render(); }
 function doDiscard(){
@@ -189,10 +518,11 @@ function doDiscard(){
     warned3 = rs.turnNo;
     say('You are still holding a 3. Click "Lay down 3s" first (you get a replacement card), unless you are saving it for a Straight. Click Discard again to keep it.', 'err'); render(); return;
   }
-  const r = discard(rs, 0, cs[0].id);
+  const tn = rs.turnNo, r = discard(rs, 0, cs[0].id);   // remember this turn's number: the engine moves on to the next player inside discard()
   if (!r.ok){ say(r.why, 'err'); render(); return; }
-  sel.clear(); notice = null; addFeed(r.out ? `You went out with ${cardName(cs[0])}!` : `You discarded ${cardName(cs[0])}.`);
+  acted(tn); sel.clear(); notice = null; addFeed(r.out ? `You went out with ${cardName(cs[0])}!` : `You discarded ${cardName(cs[0])}.`);
   if (rs.talon[0].length) addFeed('You took a talon. You will pick it up at the start of your next turn.');
+  if (!rs.ended){ const l = handAlert(rs, 0); if (l) addFeed(l); }
   afterAction();
 }
 function doSpecial(){
@@ -200,7 +530,7 @@ function doSpecial(){
   if (staged.length){ doUndo(); }
   const r = declareSpecial(rs, 0);
   if (!r.ok){ say(r.why, 'err'); render(); return; }
-  addFeed(`You declared ${r.sp.name}!`); afterAction();
+  acted(); addFeed(`You declared ${r.sp.name}!`); afterAction();
 }
 const groupLabel = g => g.map(c => c.rank === 'JK' ? 'Joker' : c.rank).join(' ');
 const groupSig = g => g.map(c => c.rank).sort().join(',');
@@ -228,13 +558,27 @@ function openSteps(h){
   return {text:`${lead} Step ${step} of ${plan.length}: select the highlighted ${groupLabel(g)} and click "Add to opening meld".${step === plan.length ? (viaPack ? ' Then click "Pick up pack".' : ' Then click "Lay down opening meld".') : ''}`, ids:mapToHand(g)};
 }
 function doHint(){
-  if (!myTurn()){ say('Hints are available on your turn.', 'info'); render(); return; }
+  if (!myTurn()){ say('Hints are available on your turn.', 'err'); render(); return; }
   let h;
   if (staged.length){ const save = rs.hands[0]; rs.hands[0] = save.concat(staged.flat()); try { h = hintFor(rs, 0); } finally { rs.hands[0] = save; } }
   else h = hintFor(rs, 0);
   if (h.kind === 'open' || h.kind === 'packopen') h = openSteps(h);
   else if (staged.length && h.kind === 'discard') h = {text:'You cannot open this turn. Click "Undo staging" to put the staged cards back in your hand, then ask for another hint.', ids:[]};
-  hintIds = new Set(h.ids || []); hintText = h.text; hintTarget = h.target || null; render();
+  hintIds = new Set(h.ids || []); hintText = h.text; hintTarget = h.target || null; speak('Hint. ' + h.text, true); render();
+}
+/* says why a greyed-out button or pile cannot be used right now */
+function explainDisabled(act){
+  if (!rs || modal) return;
+  const me = !rs.ended && rs.current === 0 && !aiBusy; let m = '';
+  if (rs.ended) m = 'The round is over.';
+  else if (!me) m = "It's not your turn yet. Wait for the computer players.";
+  else if (act === 'draw' || act === 'pack') m = rs.phase !== 'draw' ? 'You have already drawn this turn. Meld if you can, then discard.' : (act === 'pack' ? 'The pack is empty, so there is nothing to pick up.' : '');
+  else if (act === 'lay3') m = 'You have no 3s to lay down.';
+  else if (act === 'meld') m = 'Select cards from your hand first.';
+  else if (act === 'commit') m = rs.phase === 'draw' ? 'Draw a card first, then lay down your opening meld.' : 'Nothing is staged yet. Select cards and click Add to opening meld first.';
+  else if (act === 'undo') m = 'Nothing is staged.';
+  else if (act === 'discard') m = rs.phase === 'draw' ? 'Draw a card first, then discard.' : 'Select exactly one card to discard.';
+  if (m){ say(m, 'err'); render(); }
 }
 function toggleCard(id){ if (!myTurn()) return; if (sel.has(id)) sel.delete(id); else sel.add(id); render(); }
 
@@ -244,59 +588,105 @@ function cardHTML(c, o = {}){
   let inner;
   if (c.rank === 'JK') inner = `<span style="font-size:${o.mini ? 9 : 11}px;letter-spacing:-.3px">${o.mini ? 'JK' : 'JOKER'}</span><span class="s">★</span>`;
   else inner = `<span>${c.rank}</span><span class="s">${SYM[c.suit]}</span>`;
-  const cls = ['card', red ? 'red' : '', isWild(c) ? 'wild' : '', o.mini ? 'mini' : '', (o.dr ? dsel.has(c.id) : (sel.has(c.id) && !o.mini)) ? 'sel' : '', (o.dr ? (o.hl && o.hl.has(c.id)) : hintIds.has(c.id)) ? 'hint' : ''].join(' ');
+  const cls = ['card', red ? 'red' : '', isWild(c) ? 'wild' : '', o.mini ? 'mini' : '', (o.dr ? dsel.has(c.id) : (sel.has(c.id) && !o.mini)) ? 'sel' : '', (o.dr ? (o.hl && o.hl.has(c.id)) : hintIds.has(c.id)) ? 'hint' : '', (!o.dr && !o.mini && newIds.has(c.id)) ? 'new' : '', (o.mini && !o.dr && rs && rs.fresh && rs.fresh.ids[c.id] && rs.fresh.ids[c.id].t === hlTurn) ? 'fresh' : ''].join(' ');
   return `<div class="${cls}" ${o.mini ? '' : (o.dr ? `data-dcard="${c.id}"` : `data-card="${c.id}"`)}>${inner}</div>`;
 }
 const deadList = () => [...new Set(rs.teams.flatMap(t => t.melds.filter(m => m.closed && m.rank !== 'W').map(m => m.rank)))];
 const backHTML = () => '<div class="card back"></div>';
+/* The hand is always sorted. Cards that just arrived (draw, talon, replacement 3s, pack) flash until you take an action. */
+let handSeen = new Set(), newIds = new Set();
+function orderedHand(){
+  const hand = rs.hands[0];
+  hand.forEach(c => { if (!handSeen.has(c.id)){ handSeen.add(c.id); newIds.add(c.id); } });
+  return sortHand(hand);
+}
+function resetHandOrder(){ handSeen = new Set(rs.hands[0].map(c => c.id)); newIds = new Set(); }
 function sortHand(h){ return h.slice().sort((a, b) => ORDER.indexOf(a.rank) - ORDER.indexOf(b.rank) || a.suit.localeCompare(b.suit)); }
 function meldsHTML(team, own){
   if (!team.melds.length && !team.threes.length) return '<div class="empty">Nothing on the table yet.</div>';
   let h = '<div class="melds">';
   for (const m of team.melds){
     const lbl = `${rankName(m.rank)} ×${m.cards.length}${m.closed ? ' — ' + canastaDesc(m).toUpperCase() + ' CANASTA' : ''}${!m.closed && m.pure ? ' (clean, must close)' : ''}${!m.closed && m.rank === 'W' ? ' (must close)' : ''}${!m.closed && m.rank !== 'W' && mWild(m) ? ' (mixed)' : ''}`;
-    h += `<div class="meld ${m.closed ? 'can' : ''} ${own && !m.closed ? 'tgt' : ''} ${own && hintTarget === m.rank && !m.closed ? 'hint' : ''}" ${own && !m.closed ? `data-meld="${m.rank}" title="Select cards, then click here to add them to this meld"` : ''}><div class="ml">${esc(lbl)}</div><div class="cs">${m.cards.map(c => cardHTML(c, {mini:true})).join('')}</div></div>`;
+    h += `<div class="meld ${m.closed ? 'can' : ''} ${freshMeld(rs.teams.indexOf(team) + m.rank) >= 0 ? 'fresh' : ''} ${own && !m.closed ? 'tgt' : ''} ${own && hintTarget === m.rank && !m.closed ? 'hint' : ''}" ${own && !m.closed ? `data-meld="${m.rank}" title="Select cards, then click here to add them to this meld"` : ''}><div class="ml">${esc(lbl)}</div><div class="cs">${m.cards.map(c => cardHTML(c, {mini:true})).join('')}</div></div>`;
   }
   h += '</div>';
-  if (team.threes.length) h += `<div class="threes" style="margin-top:6px">3s: ${team.threes.map(c => cardHTML(c, {mini:true})).join('')}</div>`;
+  if (team.threes.length) h += `<div class="threes ${freshMeld(rs.teams.indexOf(team) + '3s') >= 0 ? 'fresh' : ''}" style="margin-top:6px">3s: ${team.threes.map(c => cardHTML(c, {mini:true})).join('')}</div>`;
   return h;
 }
 function statusLine(){
   if (rs.ended) return 'Round over.';
-  if (rs.current !== 0) return `${SEATS[rs.current]} is playing…`;
+  if (rs.current !== 0) return `${SEATS[shownSeat !== 0 ? shownSeat : rs.current]} is playing…`;
+  if (shownSeat !== 0) return `${SEATS[shownSeat]} is playing…`;
   const has3 = rs.hands[0].some(isThree);
   if (rs.phase === 'draw') return has3 ? 'Your turn: lay down your 3s first, then draw from the draw pile or pick up the pack.' : 'Your turn: draw from the draw pile, or pick up the pack.';
   if (has3) return 'You have a 3: lay it down (you get a replacement), then meld and discard.';
   return rs.teams[0].opened ? 'Meld if you can, then discard one card.' : `Your team has not opened. Opening needs ${rs.needs[0]} points with a clean triple. Otherwise, discard one card.`;
 }
+function modalsHTML(){
+  let h = '';
+  if (modal === 'round' && screen === 'game' && rs && rs.result) h += roundModal();
+  if (modal === 'rules') h += rulesModal();
+  if (modal === 'specials') h += specialsModal();
+  if (modal === 'settings') h += settingsModal();
+  if (modal === 'guide') h += guideModal();
+  if (modal === 'leaderboard') h += leaderboardModal();
+  if (modal === 'ask' && rs && rs.pendingAsk) h += `<div class="modalbg"><div class="modal"><h2>North asks: "May I go out?"</h2><p>North has two canastas and can go out this turn if you agree.</p><p>Cards still in your hand count against your team if North goes out. You hold <b>${sumVal(rs.hands[0])} points</b> in ${rs.hands[0].length} cards.</p><p class="empty">North can only ask once this round. If you say no, North cannot go out this round.</p><button class="btn primary" data-act="askyes">Yes, go ahead</button> <button class="btn" data-act="askno">No, not yet</button></div></div>`;
+  if (modal === 'drills') h += drillModal();
+  if (modal === 'confirm') h += `<div class="modalbg"><div class="modal"><h2>Start a new game?</h2><p>Your current scores will be lost.</p><button class="btn primary" data-act="newgame2">Yes, new game</button> <button class="btn" data-act="closemodal">Cancel</button></div></div>`;
+  return h;
+}
+function paint(html){
+  const ae = document.activeElement, keep = ae && ['pname', 'vsel', 'vrate', 'mvol', 'mstyle'].includes(ae.id) ? {id:ae.id, s:ae.selectionStart, e:ae.selectionEnd} : null;
+  $app().innerHTML = html;
+  if (keep){ const n = document.getElementById(keep.id); if (n){ n.focus(); try { n.setSelectionRange(keep.s, keep.e); } catch (e) {} } }
+}
+function homeHTML(){
+  const prog = game && !game.over, rec = history.filter(g => g.name === playerName), wins = rec.filter(g => g.won).length;
+  const hb = (type, title, sub) => `<button class="hbtn" data-hd="${type}"><b>${title}</b><span>${sub}</span></button>`;
+  return `<div class="home"><div class="hero"><div class="suits">♠ <span style="color:#ff8a80">♥ ♦</span> ♣</div><h1>Canasta Practice</h1><p>Modern American Canasta</p>
+    <p class="who">Welcome, <b>${esc(playerName)}</b> · Level: ${LEVELS[levelKey][0]}${rec.length ? ' · Record: ' + wins + ' won, ' + (rec.length - wins) + ' lost' : ''}</p></div>
+  <div class="hgrid">
+   <div class="hcard main"><h2>Play a game</h2><p>You and North against West and East. First team to 8,500 wins.</p>
+     ${prog ? `<p class="empty">Game in progress: round ${game.round}, ${game.scores[0].toLocaleString()} to ${game.scores[1].toLocaleString()}.</p><button class="btn primary big" data-act="playgame">Continue game</button> <button class="btn big" data-act="homenew">Start a new game</button>` : `<button class="btn primary big" data-act="playgame">Start a game</button>`}</div>
+   <div class="hcard"><h2>Practice drills</h2><p>Short exercises with instant feedback. No full game needed.</p>
+     ${hb('spot', 'Spot the special hand', 'Which special hand do these 14 cards make?')}${hb('open', 'Build an opening meld', 'Reach the point target the legal way')}${hb('disc', 'Pick the right discard', 'Learn what is safe to throw away')}</div>
+   <div class="hcard"><h2>Learn</h2><p>Read up on the game.</p>
+     <button class="hbtn" data-act="guide"><b>How to play</b><span>The full Canasta Made Easy guide</span></button><button class="hbtn" data-act="specials"><b>Special hands</b><span>Color-coded card with points</span></button><button class="hbtn" data-act="rules"><b>Rules used</b><span>Exactly how this game plays</span></button></div>
+   <div class="hcard"><h2>You</h2><p>Your results and preferences.</p>
+     <button class="hbtn" data-act="leaderboard"><b>Leaderboard</b><span>Wins, scores and streaks</span></button><button class="hbtn" data-act="settings"><b>Settings</b><span>Name, pace, difficulty, voice, music</span></button></div>
+  </div></div>`;
+}
 function render(){
+  drainAlerts();
+  if (screen === 'home'){ paint(homeHTML() + modalsHTML()); return; }
   if (!rs){ $app().innerHTML = ''; return; }
   for (const id of [...sel]) if (!rs.hands[0].some(c => c.id === id)) sel.delete(id);
   const t0 = rs.teams[0], t1 = rs.teams[1], me = myTurn();
-  const hand = sortHand(rs.hands[0]);
+  const hand = orderedHand();
   const stagedPts = staged.flat().reduce((a, c) => a + cardVal(c), 0);
   const sp = me && rs.phase === 'play' && specialEligible(rs, 0) ? detectSpecial(rs.hands[0]) : null;
   const info = me && rs.phase === 'draw' ? packInfo(rs, 0) : null;
   const top = rs.pack[rs.pack.length - 1];
-  let h = `<header class="top"><h1>Canasta Practice</h1><div><button class="btn" data-act="hint" ${me ? '' : 'disabled'}>Hint</button> <button class="btn gold" data-act="drills">Practice drills</button> <button class="btn" data-act="rules">Rules used</button> <button class="btn" data-act="newgame">New game</button></div></header>`;
+  let h = `<header class="top"><h1>Canasta Practice</h1><div><button class="btn" data-act="home">Home</button> <button class="btn" data-act="hint" ${me ? '' : 'disabled'}>Hint</button> <button class="btn" data-act="drills">Practice drills</button> <button class="btn" data-act="specials">Special hands</button> <button class="btn" data-act="guide">How to play</button> <button class="btn" data-act="leaderboard">Leaderboard</button> <button class="btn" data-act="rules">Rules used</button> <button class="btn" data-act="settings">Settings</button> <button class="btn" data-act="newgame">New game</button></div></header>`;
+  h += '<div class="layout"><div class="gamecol">';
   h += `<div class="scores">
-   <div class="sc you"><div class="n">${TEAM_NAMES[0]}</div><div class="v">${game.scores[0].toLocaleString()}</div><div class="s">${t0.opened ? '✓ Opened' : 'Opening needs ' + rs.needs[0]} · Canastas: ${t0.melds.filter(m => m.closed).length}${goOutCheck(rs, 0).ok ? ' · <b>can go out</b>' : ''}</div></div>
+   <div class="sc you"><div class="n">${TEAM_NAMES[0]}</div><div class="v">${game.scores[0].toLocaleString()}</div><div class="s">${t0.opened ? '✓ Opened' : 'Opening needs ' + rs.needs[0]} · Canastas: ${t0.melds.filter(m => m.closed).length}${(() => { const st = goOutState(rs, 0); return st === 'can-ask' ? ' · <b>ask partner to go out</b>' : (st === 'yes' && goOutCheck(rs, 0).ok ? ' · <b>can go out</b>' : (st === 'refused' ? ' · partner said no' : '')); })()}</div></div>
    <div class="sc opp"><div class="n">${TEAM_NAMES[1]}</div><div class="v">${game.scores[1].toLocaleString()}</div><div class="s">${t1.opened ? '✓ Opened' : 'Opening needs ' + rs.needs[1]} · Canastas: ${t1.melds.filter(m => m.closed).length}</div></div>
-   <div class="sc mid"><div class="n">Round ${game.round}</div><div class="s">First to 8,500 wins</div><div class="s">Dealer: ${SHORT[game.dealer]}</div></div></div>`;
-  h += `<div class="felt"><div class="seats">`;
-  for (const s of [1, 2, 3]) h += `<div class="seat ${rs.current === s && !rs.ended ? 'cur' : ''}">${SEATS[s]}<div class="b">${rs.hands[s].length} cards${rs.talon[s].length ? ' + talon ' + rs.talon[s].length : ''}</div></div>`;
-  h += `</div><div class="center">
+   <div class="sc mid"><div class="n">Round ${game.round}</div><div class="s">First to 8,500 wins</div><div class="s">Level: ${LEVELS[levelKey][0]}</div><div class="s">Player: <span id="plname">${esc(playerName)}</span></div><div class="s">Dealer: ${SHORT[game.dealer]}</div></div></div>`;
+  const seatBox = (s, label) => `<div class="seat ${shownSeat === s && !rs.ended ? 'cur' : ''}">${label}<div class="b">${rs.hands[s].length} cards${rs.talon[s].length ? ' + talon ' + rs.talon[s].length : ''}</div></div>`;
+  h += `<div class="felt table"><div class="t-n">${seatBox(2, 'North (partner)')}</div><div class="t-w">${seatBox(1, 'West')}</div>
+   <div class="center"><div class="piles">
     <div class="pile ${me && rs.phase === 'draw' ? 'click' : ''}" data-act="draw" title="Click to draw">${backHTML()}<div class="lbl">Draw pile: ${rs.stock.length}<br>${rs.stock.length >= 9 ? 'Talons available' : 'No more talons'}</div></div>
-    <div class="pile ${me && rs.phase === 'draw' && rs.pack.length ? 'click' : ''}" data-act="pack" title="Click to pick up the pack">${top ? cardHTML(top, {mini:false}).replace(' data-card="' + top.id + '"', '') : '<div class="card" style="background:transparent;border:1.5px dashed #fff"></div>'}<div class="lbl">Pack: ${rs.pack.length}${!rs.pack.length ? '<br>(empty: no 7, Ace,<br>wild or dead card)' : ''}</div></div>
-    <div class="pile" style="max-width:150px"><div class="lbl" style="text-align:left">Dead ranks:<br><b>${deadList().join(', ') || 'none yet'}</b></div></div>
-  </div></div>`;
+    <div class="pile ${me && rs.phase === 'draw' && rs.pack.length ? 'click' : ''} ${top && rs.lastDiscard && rs.lastDiscard.id === top.id && rs.lastDiscard.t === hlTurn ? 'justdisc' : ''}" data-act="pack" title="Click to pick up the pack">${top ? cardHTML(top, {mini:false}).replace(' data-card="' + top.id + '"', '') : '<div class="card" style="background:transparent;border:1.5px dashed #fff"></div>'}<div class="lbl">Pack: ${rs.pack.length}${top && rs.lastDiscard && rs.lastDiscard.id === top.id && rs.lastDiscard.t === hlTurn ? '<br><b>' + SHORT[rs.lastDiscard.seat] + ' just discarded</b>' : ''}${!rs.pack.length ? '<br>(empty: no 7, Ace,<br>wild or dead card)' : ''}</div></div>
+   </div><div class="deadr">Dead ranks: <b>${deadList().join(', ') || 'none yet'}</b></div>${caption ? `<div class="cap">${caption.slice(0, 3).map(l => `<div>${esc(l)}</div>`).join('')}</div>` : ''}</div>
+   <div class="t-e">${seatBox(3, 'East')}</div><div class="t-s">${seatBox(0, 'You')}</div></div>`;
   h += `<div class="status">${esc(statusLine())}</div>`;
   if (hintText) h += `<div class="notice hint"><b>Hint:</b> ${esc(hintText)}</div>`;
   if (notice) h += `<div class="notice ${notice.kind}">${esc(notice.text)}</div>`;
   if (staged.length){
     h += `<div class="stage"><b>Opening meld staging:</b> ${stagedPts} of ${rs.needs[0]} points. ${staged.map(g => '<span class="melds" style="display:inline-flex;margin-right:8px">' + g.map(c => cardHTML(c, {mini:true})).join('') + '</span>').join('')}</div>`;
   }
-  h += `<div class="panel"><h3>Your hand (${rs.hands[0].length})</h3><div class="hand">${hand.map(c => cardHTML(c)).join('') || '<span class="empty">No cards</span>'}</div>`;
+  h += `<div class="panel"><h3>Your hand (${rs.hands[0].length}) <span class="empty" style="font-weight:400;font-size:12.5px">· double-click a card to discard it</span></h3><div class="hand">${hand.map(c => cardHTML(c)).join('') || '<span class="empty">No cards</span>'}</div>`;
   const has3 = rs.hands[0].some(isThree), opened = t0.opened;
   h += `<div class="bar">
    <button class="btn primary" data-act="draw" ${me && rs.phase === 'draw' ? '' : 'disabled'}>Draw from pile</button>
@@ -304,17 +694,16 @@ function render(){
    <button class="btn ${has3 && me ? 'gold' : ''}" data-act="lay3" ${me && has3 ? '' : 'disabled'}>Lay down 3s</button>
    <button class="btn" data-act="meld" ${me && sel.size ? '' : 'disabled'}>${opened ? 'Meld selected' : 'Add to opening meld'}</button>
    ${!opened ? `<button class="btn primary" data-act="commit" ${me && staged.length && rs.phase === 'play' ? '' : 'disabled'}>Lay down opening meld</button><button class="btn" data-act="undo" ${staged.length ? '' : 'disabled'}>Undo staging</button>` : ''}
+   ${goOutState(rs, 0) !== 'no' ? (() => { const st = goOutState(rs, 0); return `<button class="btn ${st === 'can-ask' && me ? 'gold' : ''}" data-act="askout" ${me && st === 'can-ask' ? '' : 'disabled'}>${st === 'yes' ? 'Partner said yes ✓' : (st === 'refused' ? 'Partner said no' : 'Ask partner to go out')}</button>`; })() : ''}
    <button class="btn primary" data-act="discard" ${me && rs.phase === 'play' && sel.size === 1 ? '' : 'disabled'}>Discard selected</button>
    ${sp ? `<button class="btn gold" data-act="special">Declare ${esc(sp.name)} (${sp.points.toLocaleString()})</button>` : ''}
   </div></div>`;
   h += `<div class="panel"><h3>Your team's table (${TEAM_NAMES[0]})</h3>${meldsHTML(t0, true)}</div>`;
   h += `<div class="panel"><h3>Opponents' table (${TEAM_NAMES[1]})</h3>${meldsHTML(t1, false)}</div>`;
-  h += `<div class="panel"><h3>Game log</h3><div class="feed" id="feed">${feed.slice(-14).map(t => `<div>${esc(t)}</div>`).join('')}</div></div>`;
-  if (modal === 'round') h += roundModal();
-  if (modal === 'rules') h += rulesModal();
-  if (modal === 'drills') h += drillModal();
-  if (modal === 'confirm') h += `<div class="modalbg"><div class="modal"><h2>Start a new game?</h2><p>Your current scores will be lost.</p><button class="btn primary" data-act="newgame2">Yes, new game</button> <button class="btn" data-act="closemodal">Cancel</button></div></div>`;
-  $app().innerHTML = h;
+  const who = t => /^(You|North)\b/.test(t) ? 'm' : (/^(West|East)\b/.test(t) ? 'o' : '');
+  h += `</div><aside class="logcol"><div class="panel"><h3>Game log</h3><div class="feed" id="feed">${feed.slice(-60).map(t => `<div class="${who(t)}">${esc(t)}</div>`).join('')}</div></div></aside></div>`;
+  h += modalsHTML();
+  paint(h);
   const f = document.getElementById('feed'); if (f) f.scrollTop = f.scrollHeight;
 }
 const $app = () => document.getElementById('app');
@@ -330,9 +719,69 @@ function roundModal(){
   let h = `<div class="modalbg"><div class="modal"><h2>Round ${game.round} over</h2><p>${esc(why)}</p><div class="cols">${sbTable(rs.result.teams[0], TEAM_NAMES[0])}${sbTable(rs.result.teams[1], TEAM_NAMES[1])}</div>`;
   h += `<p class="empty">Cards left in hand: ${[0,1,2,3].map(s => SHORT[s] + ' ' + rs.hands[s].length).join(' · ')}</p>`;
   h += `<p><b>Game score:</b> ${TEAM_NAMES[0]} ${game.scores[0].toLocaleString()} &nbsp;|&nbsp; ${TEAM_NAMES[1]} ${game.scores[1].toLocaleString()}</p>`;
-  if (game.over) h += `<p class="notice good"><b>${TEAM_NAMES[game.winner]} win the game!</b></p><button class="btn primary" data-act="newgame2">Start a new game</button>`;
+  if (game.over) h += `<p class="notice good"><b>${TEAM_NAMES[game.winner]} win the game!</b></p><p class="empty">Saved to the leaderboard as ${esc(playerName)}.</p><button class="btn primary" data-act="newgame2">Start a new game</button>`;
   else h += `<button class="btn primary" data-act="next">Next round</button>`;
   return h + '</div></div>';
+}
+/* ===== LEADERBOARD: finished games are kept in this browser ===== */
+let playerName = 'Player', history = [], lbConfirm = false, storageOK = true;
+function loadHistory(){ try { history = JSON.parse(localStorage.getItem('canastaHistory') || '[]'); if (!Array.isArray(history)) history = []; } catch (e){ history = []; storageOK = false; } }
+function saveHistory(){ try { localStorage.setItem('canastaHistory', JSON.stringify(history.slice(-500))); } catch (e){ storageOK = false; } }
+function recordGame(){
+  if (!game || !game.over || game.recorded) return; game.recorded = true;
+  history.push({t:Date.now(), name:playerName || 'Player', level:levelKey, us:game.scores[0], them:game.scores[1], won:game.winner === 0, rounds:game.round}); saveHistory();
+}
+const pct = (a, b) => b ? Math.round(100 * a / b) + '%' : '-';
+function lbRow(cells){ return '<tr>' + cells.map((c, i) => `<td${i ? ' style="text-align:right"' : ''}>${c}</td>`).join('') + '</tr>'; }
+function leaderboardModal(){
+  const me = history.filter(g => g.name === playerName), wins = me.filter(g => g.won).length;
+  let streak = 0, best = 0, run = 0; me.forEach(g => { run = g.won ? run + 1 : 0; best = Math.max(best, run); }); streak = run;
+  const bestScore = me.length ? Math.max(...me.map(g => g.us)) : 0, avg = me.length ? Math.round(me.reduce((a, g) => a + g.us, 0) / me.length) : 0;
+  const names = [...new Set(history.map(g => g.name))].map(n => { const gs = history.filter(g => g.name === n), w = gs.filter(g => g.won).length; return {n, games:gs.length, w, best:Math.max(...gs.map(g => g.us))}; })
+    .sort((a, b) => b.w - a.w || (b.w / b.games) - (a.w / a.games) || b.best - a.best);
+  let h = `<div class="modalbg"><div class="modal"><h2>Leaderboard</h2>`;
+  if (!history.length) h += `<p>No finished games yet. Play a game to 8,500 points and it will show up here.</p>`;
+  else {
+    h += `<div class="panel"><h3>${esc(playerName)}</h3><p>${me.length} games, ${wins} wins (${pct(wins, me.length)}). Average score ${avg.toLocaleString()}, best ${bestScore.toLocaleString()}. Current win streak ${streak}, best streak ${best}.</p></div>`;
+    h += `<h3>Players</h3><table class="sptable"><tr><th>#</th><th>Player</th><th style="text-align:right">Games</th><th style="text-align:right">Wins</th><th style="text-align:right">Win %</th><th style="text-align:right">Best score</th></tr>${names.map((x, i) => lbRow([i + 1, esc(x.n), x.games, x.w, pct(x.w, x.games), x.best.toLocaleString()])).join('')}</table>`;
+    h += `<h3>By difficulty</h3><table class="sptable"><tr><th>Level</th><th style="text-align:right">Games</th><th style="text-align:right">Wins</th><th style="text-align:right">Win %</th></tr>${Object.keys(LEVELS).map(k => { const gs = history.filter(g => g.level === k), w = gs.filter(g => g.won).length; return lbRow([LEVELS[k][0], gs.length, w, pct(w, gs.length)]); }).join('')}</table>`;
+    h += `<h3>Recent games</h3><table class="sptable"><tr><th>Date</th><th>Player</th><th>Level</th><th style="text-align:right">Score (you : them)</th><th style="text-align:right">Result</th></tr>${history.slice(-10).reverse().map(g => lbRow([new Date(g.t).toLocaleDateString(), esc(g.name), (LEVELS[g.level] || [g.level])[0], g.us.toLocaleString() + ' : ' + g.them.toLocaleString(), g.won ? 'Won' : 'Lost'])).join('')}</table>`;
+  }
+  h += `<p class="empty">${storageOK ? 'Results are saved in this browser on this device.' : 'This browser is not letting the game save results, so the leaderboard will reset when you leave.'} Change the player name in Settings so friends can share one device.</p>`;
+  if (history.length) h += `<p>${lbConfirm ? '<button class="btn warn" data-act="lbreset">Yes, erase all results</button> <button class="btn" data-act="lbcancel">Cancel</button>' : '<button class="btn" data-act="lbreset">Reset leaderboard</button>'}</p>`;
+  return h + `<button class="btn primary" data-act="closemodal">Close</button></div></div>`;
+}
+let lastCardClick = 0;
+let shownSeat = 0, hlTurn = -1;   // which seat is lit up and whose move is highlighted: they follow the voice, not the game engine
+let askArmed = false;
+let caption = null;   // short text in the green table about what the last player melded
+function acted(tn){ newIds.clear(); hlTurn = tn == null ? rs.turnNo : tn; askArmed = false; caption = null; }
+function doAskOut(){
+  if (!myTurn()) return;
+  const st = goOutState(rs, 0);
+  if (st !== 'can-ask'){ const r = askToGoOut(rs, 0); say(r.why || 'You cannot ask right now.', 'err'); render(); return; }
+  if (!askArmed){ askArmed = true; say('You only get ONE ask per round, and "no" means you cannot go out this round. Click "Ask partner to go out" again to confirm.', 'info'); render(); return; }
+  askArmed = false; clearHint();
+  const r = askToGoOut(rs, 0); r.lines.forEach(addFeed);
+  say(r.yes ? 'North said yes. Meld everything except one card, then discard that last card to go out.' : 'North said no. You cannot go out this round.', r.yes ? 'good' : 'err'); render();
+}
+function answerAsk(yes){
+  if (!rs.pendingAsk) return;
+  const seat = rs.pendingAsk.seat, team = rs.teams[teamOf(seat)];
+  if (yes) team.permit[seat] = true; rs.pendingAsk = null; modal = null;
+  addFeed(yes ? 'You say yes to North: "Go ahead!"' : 'You say no to North: "Not yet."');
+  const log = aiContinue(rs, seat); log.forEach(addFeed);
+  aiBusy = false; afterAction();
+}
+const freshIds = () => { const f = rs && rs.fresh; if (!f) return {}; const o = {}; for (const id in f.ids) if (f.ids[id].t === hlTurn) o[id] = f.ids[id].seat; return o; };
+const freshMeld = key => { const f = rs && rs.fresh; return f && f.melds[key] && f.melds[key].t === hlTurn ? f.melds[key].seat : -1; };
+let guideCh = 0;
+function guideModal(){
+  const nav = GUIDE.map((c, i) => `<button class="gnav ${i === guideCh ? 'on' : ''}" data-guide="${i}">${esc(c[0])}</button>`).join('');
+  const prev = guideCh > 0 ? `<button class="btn" data-guide="${guideCh - 1}">Previous: ${esc(GUIDE[guideCh - 1][0])}</button>` : '<span></span>';
+  const next = guideCh < GUIDE.length - 1 ? `<button class="btn primary" data-guide="${guideCh + 1}">Next: ${esc(GUIDE[guideCh + 1][0])}</button>` : '<span></span>';
+  return `<div class="modalbg"><div class="modal guide"><div class="ghead"><h2>How to play: Canasta Made Easy</h2><button class="btn primary" data-act="closemodal">Close</button></div>
+  <div class="gbody"><div class="gnavs">${nav}</div><div class="gtext">${GUIDE[guideCh][1]}<div class="gpager">${prev}${next}</div></div></div></div></div>`;
 }
 function rulesModal(){
   return `<div class="modalbg"><div class="modal"><h2>Rules used in this game</h2><ul class="rules">
@@ -342,25 +791,46 @@ function rulesModal(){
   <li>After opening: new melds are 3+ naturals. Wilds can be added only once a meld has <b>5 naturals</b> (max 2 wilds). 7s are always clean. Clean Aces stay clean. Deuce/joker melds are allowed, and you must finish one before adding wilds elsewhere.</li>
   <li><b>Talon:</b> the first team to open takes 4 cards, the second takes 3, only if at least 9 cards remain in the draw pile. No talon if you open by taking the pack.</li>
   <li><b>Pack:</b> use the top card at once, either with two matching naturals from your hand or by adding it to your meld (not if you already have 5+ in that rank). Not allowed if the top card is wild. To open with the pack, stage the rest of your opening meld first, then click "Pick up pack": your matching pair counts toward the minimum, the top card does not.</li>
-  <li><b>Discards:</b> never a 3. A wild only as your last card. On an empty pile, no 7, Ace, wild or dead card (SWAD). Discarding your last card is going out: it needs 2 canastas and no unfinished 7s, clean Aces or wild meld.</li>
+  <li><b>Discards:</b> double-click a card in your hand to discard it (or select it and click Discard selected). Never a 3. A wild only as your last card. On an empty pile, no 7, Ace, wild or dead card (SWAD). Discarding your last card is going out: it needs 2 canastas, no unfinished 7s, clean Aces or wild meld, and <b>your partner's OK</b> (click "Ask partner to go out"; one ask per round, and a "no" means you cannot go out that round). North may ask you the same way.</li>
   <li><b>Canastas:</b> clean 500, mixed 300, natural 7s or Aces 2,500, all deuces 3,000, four jokers + 2s 2,500, deuces with 1 to 3 jokers 2,000. Going out +100.</li>
   <li><b>3s:</b> 100 / 300 / 500 / 1,000 for 1 / 2 / 3 / 4 of a color. Two canastas: added. One: neutral. None: subtracted. 3s left in hand count against you.</li>
   <li><b>Penalties:</b> unfinished 7s or clean Aces meld -2,500, unfinished wild meld -2,000, 3+ Aces or 3+ 7s in one hand -1,500 plus card values. No canasta: everything on the table is subtracted.</li>
+  <li><b>Open question:</b> Dream Hand 5. Official rules: 5-of-a-kind + 4-of-a-kind + five wilds. Your group's sheet may mean any 5-4-5 with or without wilds. The game follows the official version until your group decides. Miami Pairs is 2,500 here; one printout says 3,000.</li>
   <li><b>Special hands:</b> declare with exactly 14 cards (last card from the draw pile) before your team opens, or on your first turn after your partner opens. The round ends at once, flat points only. Dream hands (8,500) win the game.</li>
   <li><b>Hints and computer players:</b> they follow one sensible strategy, not the only one. They avoid starting a clean 7s or clean Aces meld with fewer than 6 cards (it costs -2,500 if unfinished), add a wild to Aces when opening (a mixed Aces meld carries no penalty), and never meld down to a card they could not legally discard.</li>
   <li><b>Practice shortcuts:</b> if you hold only illegal first discards on an empty pile, the game lets you discard one instead of making you take back melds. The computer players do not chase special hands on purpose. Each team keeps one meld per rank.</li></ul>
   <button class="btn primary" data-act="closemodal">Close</button></div></div>`;
 }
 document.addEventListener('click', e => {
-  const card = e.target.closest('[data-card]'); if (card){ toggleCard(+card.dataset.card); return; }
+  if (rs && screen === 'game' && rs.current === 0 && !aiBusy) shownSeat = 0;
+  const card = e.target.closest('[data-card]');
+  if (card){
+    const id = +card.dataset.card, dbl = e.detail >= 2 && lastCardClick === id; lastCardClick = id;   // e.detail = real click count from the browser
+    if (dbl && rs && !rs.ended && rs.current === 0 && !aiBusy){
+      if (rs.phase === 'play'){ sel.clear(); sel.add(id); doDiscard(); return; }
+      say('Draw a card first. After that, double-click a card to discard it.', 'err'); render(); return;
+    }
+    toggleCard(id); return;
+  }
   const dc = e.target.closest('[data-dcard]'); if (dc){ dToggle(+dc.dataset.dcard); return; }
   const da = e.target.closest('[data-dact]'); if (da){ if (!da.disabled) dAct(da.dataset.dact, da.dataset.arg); return; }
-  const mt = e.target.closest('[data-meld]'); if (mt){ if (!sel.size){ say('Select cards from your hand first, then click the meld to add them.', 'info'); render(); } else if (rs.teams[0].opened) doMeld(mt.dataset.meld); return; }
-  const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+  const mt = e.target.closest('[data-meld]'); if (mt){ if (!sel.size){ say('Select cards from your hand first, then click the meld to add them.', 'err'); render(); } else if (rs.teams[0].opened) doMeld(mt.dataset.meld); return; }
+  const gb = e.target.closest('[data-guide]'); if (gb){ guideCh = +gb.dataset.guide; render(); const bg = document.querySelector('.modalbg'); if (bg) bg.scrollTop = 0; return; }
+  const hd = e.target.closest('[data-hd]'); if (hd){ openDrills(); startDrill(hd.dataset.hd); return; }
+  const sb = e.target.closest('[data-set]'); if (sb){ applySetting(sb.dataset.set, sb.dataset.val); return; }
+  const b = e.target.closest('[data-act]');
+  if (!b || b.disabled){
+    const d = b && b.disabled ? b : [...document.querySelectorAll('button[data-act]:disabled')].find(x => { const r = x.getBoundingClientRect(); return r.width > 0 && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; });
+    if (d) explainDisabled(d.dataset.act);
+    return;
+  }
   const a = b.dataset.act;
+  if ((a === 'draw' || a === 'pack') && rs && !myTurn('draw')){ explainDisabled(a); return; }
   ({drills:openDrills, draw:doDraw, pack:doPack, lay3:doLay3, meld:doMeld, commit:doCommit, undo:doUndo, discard:doDiscard, special:doSpecial, hint:doHint,
-    rules(){ modal = 'rules'; render(); }, closemodal(){ modal = rs && rs.ended ? 'round' : null; render(); },
+    rules(){ modal = 'rules'; render(); }, specials(){ modal = 'specials'; render(); }, settings(){ modal = 'settings'; nameDraft = playerName; render(); }, askout(){ doAskOut(); }, askyes(){ answerAsk(true); }, askno(){ answerAsk(false); }, home(){ goHome(); }, playgame(){ playFromHome(); }, homenew(){ if (game && !game.over){ modal = 'confirm'; render(); } else startGame(); }, savename(){ saveName(); }, guide(){ modal = 'guide'; render(); }, leaderboard(){ lbConfirm = false; modal = 'leaderboard'; render(); },
+    lbreset(){ if (!lbConfirm) lbConfirm = true; else { history = []; saveHistory(); lbConfirm = false; } render(); }, lbcancel(){ lbConfirm = false; render(); }, vtest(){ speak('You drew Ace of diamonds. West discarded King of clubs.', true); }, closemodal(){ modal = screen === 'game' && rs && rs.ended ? 'round' : null; render(); },
     next(){ nextRound(); }, newgame(){ modal = 'confirm'; render(); }, newgame2(){ startGame(); }})[a]();
 });
-startGame();
+loadSettings(); loadHistory();
+if (window.__autoplay || location.hash === '#play') startGame(); else render();   // otherwise show the home page
 </script></body></html>

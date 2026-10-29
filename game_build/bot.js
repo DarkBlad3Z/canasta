@@ -7,7 +7,7 @@ function prng(seed){ let s = seed >>> 0; return () => { s = (s * 1664525 + 10139
 const vc = new VirtualConsole(); const jsErr = [];
 vc.on('jsdomError', e => jsErr.push(String(e.stack || e).slice(0, 600))); vc.on('error', e => jsErr.push('console.error ' + e));
 const dom = new JSDOM(html, {runScripts:'dangerously', virtualConsole:vc, pretendToBeVisual:true,
-  beforeParse(w){ w.Math.random = prng(SEED); w.setTimeout = (f, ms) => setTimeout(f, 0); }});
+  beforeParse(w){ w.__autoplay = true; w.Math.random = prng(SEED); w.setTimeout = (f, ms) => setTimeout(f, 0); }});
 const w = dom.window, doc = w.document, R = prng(SEED * 7 + 3);
 const q = s => doc.querySelector(s), qa = s => [...doc.querySelectorAll(s)];
 const click = el => el.dispatchEvent(new w.MouseEvent('click', {bubbles:true}));
@@ -67,7 +67,8 @@ async function humanTurn(){
     stats.hintSteps++;
     log('  HINT: ' + ht);
     let action;
-    if (/^Lay down your 3s/.test(ht)){ action = 'lay3'; press('lay3'); }
+    if (/^You can go out this turn/.test(ht)){ action = 'askout'; press('askout'); press('askout'); stats.asks = (stats.asks || 0) + 1; }
+    else if (/^Lay down your 3s/.test(ht)){ action = 'lay3'; press('lay3'); }
     else if (/^Take the pack/.test(ht)){ action = 'pack'; press('pack'); stats.humanPack++; }
     else if (/^You hold a special hand/.test(ht)){ action = 'special'; press('special'); stats.humanSpecial++; }
     else if (/Step \d+ of \d+/.test(ht)){ action = 'stage ' + hl.length; selectOnly(hl); press('meld'); }
@@ -119,6 +120,7 @@ async function main(){
     while (stats.games < GAMES && steps++ < 300000){
       await tick();
       if (q('.modalbg')){
+        if (!st('rs.ended') && st('rs.pendingAsk')){ const yes = R() < 0.7; press(yes ? 'askyes' : 'askno'); stats.askedByNorth = (stats.askedByNorth || 0) + 1; continue; }
         if (!st('rs.ended')){ issues.push('A modal is open during play: ' + q('.modal').textContent.slice(0, 60)); break; }
         const r = recordRound();
         if (r.over){ stats.games++; if (r.winner === 0) stats.winsUs++; else stats.winsThem++; log(`GAME OVER: winner team ${r.winner} ${r.scores}`); press('newgame2'); }

@@ -6,7 +6,7 @@ function page(seed = 7){
   let s = seed >>> 0; const timers = []; const jsErr = [];
   const vc = new VirtualConsole(); vc.on('jsdomError', e => jsErr.push(String(e.stack || e).slice(0, 400)));
   const dom = new JSDOM(html, {runScripts:'dangerously', virtualConsole:vc, pretendToBeVisual:true,
-    beforeParse(w){ w.Math.random = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; w.setTimeout = (f) => { timers.push(f); return timers.length; }; }});
+    beforeParse(w){ w.__autoplay = true; w.Math.random = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; w.setTimeout = (f) => { timers.push(f); return timers.length; }; }});
   const w = dom.window, d = w.document;
   const P = {
     w, d, timers, jsErr,
@@ -137,12 +137,52 @@ test('Taking the pack cannot leave you stuck either', () => {
   P.press('pack'); expect(/legally discard/.test(P.err()), 'pack pickup leaving no legal card must be refused, got: ' + P.notice());
   return P;
 });
-test('Going out by following hints, with the +100 bonus', () => {
+test('Going out by following hints, with the +100 bonus (after asking your partner)', () => {
   const P = page(); humanTurn(P, 'play');
-  P.rig(`rs.teams[0].opened = true; rs.teams[0].melds = [meld('K','Kx7',true), meld('J','Jx7',true), meld('Q','Qx4')]; rs.hands[0] = many('Q 5'); rs.pack = [C('6')];`);
-  let h = P.hint(); expect(/^Hint: Meld: add 1 Queens/.test(h), 'expected meld hint, got: ' + h); P.selectHinted(); P.press('meld');
+  P.rig(`rs.teams[0].opened = true; rs.teams[0].melds = [meld('K','Kx7',true), meld('J','Jx7',true), meld('Q','Qx4')]; rs.hands[0] = many('Q 5'); rs.hands[2] = many('4 5'); rs.pack = [C('6')];`);
+  let h = P.hint(); expect(/Ask partner to go out/.test(h), 'expected ask-partner hint first, got: ' + h);
+  P.press('askout'); expect(/ONE ask/.test(P.notice()), 'first click should ask for confirmation, got: ' + P.notice());
+  P.press('askout'); expect(/North says yes/.test(P.ev('feed.join(" | ")')), 'partner should say yes, feed: ' + P.ev('feed.slice(-3).join(" | ")'));
+  h = P.hint(); expect(/^Hint: Meld: add 1 Queens/.test(h), 'expected meld hint, got: ' + h); P.selectHinted(); P.press('meld');
   h = P.hint(); expect(/to go out/.test(h), 'expected go-out hint, got: ' + h); P.selectHinted(); P.press('discard');
   const m = P.q('.modal'); expect(m && /You went out/.test(m.textContent) && /Going-out bonus/.test(m.textContent), 'round modal wrong: ' + (m ? m.textContent.slice(0, 200) : 'none'));
+  return P;
+});
+test('Going out without asking is refused and explains why', () => {
+  const P = page(); humanTurn(P, 'play');
+  P.rig(`rs.teams[0].opened = true; rs.teams[0].melds = [meld('K','Kx7',true), meld('J','Jx7',true)]; rs.hands[0] = many('5');`);
+  P.selectRanks(['5']); P.press('discard'); expect(/partner's permission/.test(P.err()), 'expected permission error, got: ' + P.notice());
+  return P;
+});
+test('Partner says no: one ask per round, and no going out after that', () => {
+  const P = page(); humanTurn(P, 'play');
+  P.rig(`rs.teams[0].opened = true; rs.teams[0].melds = [meld('K','Kx7',true), meld('J','Jx7',true), meld('Q','Qx4')]; rs.hands[0] = many('Q 5 8'); rs.hands[2] = many('Kx5 Qx5 Jx5 Ax5 2x2'); rs.rng = () => 0.9;`);
+  P.press('askout'); P.press('askout');
+  expect(/says no/.test(P.ev('feed.join(" | ")')), 'partner should refuse, feed: ' + P.ev('feed.slice(-3).join(" | ")'));
+  expect(P.q('button[data-act="askout"]').disabled && /said no/.test(P.q('button[data-act="askout"]').textContent), 'ask button should show the refusal');
+  P.selectRanks(['5']); P.press('discard');   // keeps 2 cards so this is a normal discard
+  expect(P.ev('rs.hands[0].length') === 2 || P.ev('rs.current') !== 0, 'normal discard should work');
+  return P;
+});
+test('North asks you: modal appears, your yes lets North go out', () => {
+  const P = page(); humanTurn(P, 'play');
+  P.rig(`rs.teams[0].opened = true; rs.teams[0].melds = [meld('K','Kx7',true), meld('J','Jx7',true), meld('Q','Qx4')]; rs.hands[2] = many('Qx2'); rs.hands[1] = many('4x6'); rs.hands[3] = many('4x6');`);
+  P.selectRanks([P.ev('rs.hands[0].find(c => !isThree(c) && !isWild(c)).rank')]); P.press('discard');
+  P.runTimers(8);
+  expect(P.ev('rs.pendingAsk') && /May I go out/.test((P.q('.modal') || {textContent: ''}).textContent), 'North should ask you, modal: ' + ((P.q('.modal') || {textContent: 'none'}).textContent.slice(0, 80)));
+  P.press('askyes'); P.runTimers(4);
+  expect(P.ev('rs.ended') && P.ev('rs.end.reason') === 'out' && P.ev('rs.end.seat') === 2, 'North should have gone out, end: ' + P.ev('JSON.stringify(rs.end && {r: rs.end.reason, s: rs.end.seat})'));
+  return P;
+});
+test('North asks you and you say no: North keeps playing but cannot go out', () => {
+  const P = page(); humanTurn(P, 'play');
+  P.rig(`rs.teams[0].opened = true; rs.teams[0].melds = [meld('K','Kx7',true), meld('J','Jx7',true), meld('Q','Qx4')]; rs.hands[2] = many('Qx2'); rs.hands[1] = many('4x6'); rs.hands[3] = many('4x6');`);
+  P.selectRanks([P.ev('rs.hands[0].find(c => !isThree(c) && !isWild(c)).rank')]); P.press('discard');
+  P.runTimers(8);
+  expect(P.ev('rs.pendingAsk'), 'North should be asking');
+  P.press('askno'); P.runTimers(4);
+  expect(!P.ev('rs.ended') || P.ev('rs.end.seat') !== 2, 'North must not go out after a no');
+  expect(P.ev('rs.teams[0].asked[2]') && !P.ev('rs.teams[0].permit[2]'), 'ask recorded as refused');
   return P;
 });
 test('Talon: you are told when your talon joins your hand', () => {

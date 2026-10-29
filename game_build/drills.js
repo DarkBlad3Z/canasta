@@ -26,6 +26,34 @@ const SP_INFO = {
   'Dream Hand +5': ['A set of five, a set of four, plus five wilds of any kind.', 8500]
 };
 const SP_NAMES = Object.keys(SP_INFO);
+/* colour coding from the group's special-hands sheet: nw = blue (no wilds), mw = yellow (must include wilds), ew = pink (wilds or no wilds) */
+const SP_KIND = {'Pairs without wilds':'nw', 'Garbage':'nw',
+  'Pairs with 1 wild':'mw', 'Miami Pairs':'mw', 'Straight':'mw', 'Triples':'mw', 'Quads':'mw', 'Dream Hand +4':'mw',
+  'Zip Code':'ew', 'Blast Off':'ew', 'Dream Hand +5':'ew'};
+const KIND_TXT = {nw:'Blue: must NOT include wilds', mw:'Yellow: must include wilds', ew:'Pink: wilds or no wilds'};
+const KIND_SHORT = {nw:'no wilds', mw:'must include wilds', ew:'wilds or no wilds'};
+const SP_ROWS = [
+  ['Pairs without wilds', 'Pairs (no wilds)', 'All pairs, no wilds'],
+  ['Pairs with 1 wild', 'Pairs (with wilds)', 'All pairs including deuces OR jokers, Aces and 7s'],
+  ['Miami Pairs', 'Miami Pairs', 'All pairs including deuces AND jokers, Aces and 7s'],
+  ['Straight', 'Straight', 'A, 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K, Joker'],
+  ['Garbage', 'Garbage Hand (4x4x3x3)', 'Two 4-of-a-kind, two 3-of-a-kind'],
+  ['Zip Code', 'Zip Code (4x3x3x2x2)', 'One 4-of-a-kind, two 3-of-a-kind, two pairs'],
+  ['Blast Off', 'Blast Off (5x4x3x2)', 'One 5-of-a-kind, one 4-of-a-kind, one 3-of-a-kind, one pair'],
+  ['Triples', 'Triples (4x4x4x2)', 'Three 4-of-a-kind, with a pair of matching wilds'],
+  ['Quads', 'Quads (3x3x3x3x2)', 'Four 3-of-a-kind, with a pair of jokers OR deuces'],
+  ['Dream Hand +4', 'Dream Hand 4 (5x5x4)', 'Two 5-of-a-kind, 4 matching wilds'],
+  ['Dream Hand +5', 'Dream Hand 5 (5x5x4)', '<b>Two interpretations (to settle with your group):</b><br><b>A. Official rules:</b> one 5-of-a-kind, one 4-of-a-kind, plus 5 wilds (any mix of 2s and jokers). Must include wilds (yellow).<br><b>B. Your group\'s sheet:</b> one 5-of-a-kind, one 4-of-a-kind, one 5-of-a-kind, any cards, with or without wilds (pink).<br><i>The game currently accepts only A.</i>']
+];
+const DREAM5_NOTE = ' Dream Hand 5 has two interpretations: officially it needs five wilds; your group\'s sheet allows any 5-4-5. The game accepts only the official version for now.';
+function specialsModal(){
+  let h = `<div class="modalbg"><div class="modal"><h2>Special hands</h2><p>Declare with exactly 14 cards, before your team opens. The color tells you whether wilds are needed.</p>`;
+  h += `<div class="klegend">${['nw','mw','ew'].map(k => `<span class="kchip k-${k}">${KIND_TXT[k]}</span>`).join('')}</div>`;
+  h += `<table class="sptable"><tr><th>Special hand</th><th>Cards required</th><th>Points</th></tr>`;
+  for (const [key, label, cards] of SP_ROWS) h += `<tr class="k-${SP_KIND[key]}"><td><b>${label}</b></td><td>${cards}</td><td>${SP_INFO[key][1].toLocaleString()}</td></tr>`;
+  h += `</table><p class="empty">Only a Straight may contain a 3. Dream hands (8,500) win the game. Miami Pairs is 2,500 here (the official rule); one printout shows 3,000.</p><button class="btn primary" data-act="closemodal">Close</button></div></div>`;
+  return h;
+}
 function genSpecial(name){
   const ranks = shuf(NAT3), cards = [];
   const sets = (sizes, rs) => sizes.forEach((n, i) => cards.push(...mkSet(rs[i], n)));
@@ -120,7 +148,7 @@ function dToggle(id){
 function dAct(a, arg){
   if (a === 'start') return startDrill(arg);
   if (a === 'menu'){ drill = null; dsel.clear(); return render(); }
-  if (a === 'close'){ modal = rs && rs.ended ? 'round' : null; drill = null; return render(); }
+  if (a === 'close'){ modal = screen === 'game' && rs && rs.ended ? 'round' : null; drill = null; return render(); }
   if (!drill) return;
   if (a === 'next') return startDrill(drill.type);
   if (drill.type === 'spot' && a === 'spot' && !drill.done){
@@ -206,15 +234,15 @@ function drillModal(){
     <div class="panel"><h3>Spot the special hand</h3><p>See 14 cards and decide which special or dream hand they make, or whether they make none. ${dStats('spot')}</p><button class="btn primary" data-dact="start" data-arg="spot">Start</button></div>
     <div class="panel"><h3>Build an opening meld</h3><p>Pick the cards that make a legal opening meld for the point target (clean triple, wild limits, keep 2 cards), or say you cannot open. ${dStats('open')}</p><button class="btn primary" data-dact="start" data-arg="open">Start</button></div>
     <div class="panel"><h3>Pick the right discard</h3><p>Choose a discard from a mid-game table. Learn the SWAD rule, dead cards, 7s and Aces, and what feeds your opponents. ${dStats('disc')}</p><button class="btn primary" data-dact="start" data-arg="disc">Start</button></div></div>
-    <p><button class="btn" data-dact="close">Back to game</button></p>`;
+    <p><button class="btn" data-dact="close">${screen === 'home' ? 'Back to menu' : 'Back to game'}</button></p>`;
     return h + '</div></div>';
   }
-  const foot = (extra = '') => `<div class="bar">${extra}<button class="btn primary" data-dact="next" ${drill.done ? '' : 'disabled'}>Next</button><button class="btn" data-dact="menu">All drills</button><button class="btn" data-dact="close">Back to game</button> ${dStats(drill.type)}</div>`;
+  const foot = (extra = '') => `<div class="bar">${extra}<button class="btn primary" data-dact="next" ${drill.done ? '' : 'disabled'}>Next</button><button class="btn" data-dact="menu">All drills</button><button class="btn" data-dact="close">${screen === 'home' ? 'Back to menu' : 'Back to game'}</button> ${dStats(drill.type)}</div>`;
   if (drill.type === 'spot'){
-    h += `<h2>Spot the special hand</h2><p>These are your 14 cards (the last one came from the draw pile). What do they make?</p>${dCards(drill.cards)}<div class="bar" style="flex-wrap:wrap">`;
+    h += `<h2>Spot the special hand</h2><p>These are your 14 cards (the last one came from the draw pile). What do they make?</p>${dCards(drill.cards)}<div class="klegend">${['nw','mw','ew'].map(k => `<span class="kchip k-${k}">${KIND_TXT[k]}</span>`).join('')}</div><div class="bar" style="flex-wrap:wrap">`;
     for (const n of SP_NAMES.concat(['none'])){
       const label = n === 'none' ? 'No special hand' : n; const val = n === 'none' ? null : n;
-      let cls = 'btn';
+      let cls = 'btn' + (SP_KIND[n] ? ' k-' + SP_KIND[n] : '');
       if (drill.done){ if (val === drill.answer) cls += ' right'; else if (val === drill.picked) cls += ' wrong'; }
       h += `<button class="${cls}" data-dact="spot" data-arg="${n}" ${drill.done ? 'disabled' : ''}>${label}</button>`;
     }
@@ -222,7 +250,7 @@ function drillModal(){
     if (drill.done){
       const ok = drill.picked === drill.answer;
       h += `<div class="notice ${ok ? 'good' : 'err'}"><b>${ok ? 'Correct!' : 'Not quite.'}</b> ` + (drill.answer
-        ? `This is <b>${drill.answer}</b> for ${SP_INFO[drill.answer][1].toLocaleString()} points. ${SP_INFO[drill.answer][0]}`
+        ? `This is <b>${drill.answer}</b> for ${SP_INFO[drill.answer][1].toLocaleString()} points (<span class="kchip k-${SP_KIND[drill.answer]}">${KIND_SHORT[SP_KIND[drill.answer]]}</span>). ${SP_INFO[drill.answer][0]}${drill.answer === 'Dream Hand +5' ? DREAM5_NOTE : ''}`
         : 'These cards do not make a special hand. ' + noSpecialWhy(drill.cards)) + `<br><span style="font-size:13px">${describeHand(drill.cards)}</span></div>`;
       if (drill.answer) h += `<p class="empty">Reminder: declare before your team opens (or on your first turn after your partner opens), with your last card from the draw pile. No 3s except in a Straight.</p>`;
     }
