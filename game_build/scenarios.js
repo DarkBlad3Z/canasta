@@ -48,25 +48,76 @@ const humanTurn = (P, phase = 'draw') => P.rig(`rs.current = 0; rs.phase = '${ph
 
 test('Open by taking the pack, following hints step by step', () => {
   const P = page(); humanTurn(P);
-  P.rig(`rs.hands[0] = many('Kx2 Qx3 Jx3 10x3 9x3 4'); rs.pack = [C('5'), C('8'), C('K','D')]; rs.teams[0].opened = false; rs.needs[0] = 125;`);
+  P.rig(`rs.hands[0] = many('Kx3 Qx4 Jx3 10x3 9x3 4'); rs.pack = [C('5'), C('8'), C('K','D')]; rs.teams[0].opened = false; rs.needs[0] = 125;`);
   let h = P.hint(); expect(/open by taking the pack/.test(h), 'hint did not suggest opening with the pack: ' + h);
   for (let i = 0; i < 6 && /Step \d+ of/.test(h); i++){ P.selectHinted(); P.press('meld'); expect(!P.err(), 'staging error: ' + P.err()); h = P.hint(); }
   expect(/Now click "Pick up pack"/.test(h), 'final step hint wrong: ' + h);
   P.press('pack');
   expect(P.ev('rs.teams[0].opened') === true, 'team did not open');
   expect(P.ev('rs.pack.length') === 0, 'pack not taken');
-  expect(P.ev("rs.teams[0].melds.some(m => m.rank === 'K' && m.cards.length === 3)"), 'no K meld of top card + pair');
+  expect(P.ev("rs.teams[0].melds.some(m => m.rank === 'K' && m.cards.length === 4)"), 'top card should join the three K as the 4th card');
   expect(P.ev('rs.pendingTalon') === null, 'talon should not be given when opening with the pack');
   h = P.hint(); expect(/Discard|Meld/.test(h), 'after pack opening, hint should be meld/discard: ' + h);
   return P;
 });
-test('Pack opening counts the pair toward the minimum (official rule)', () => {
+test('House rule: opening with the pack needs three of the top rank in the staged meld', () => {
   const P = page(); humanTurn(P);
-  // 105 from other cards + 20 from the pair = 125 exactly
-  P.rig(`rs.hands[0] = many('Kx2 Qx3 Jx3 10x3 5x3 8'); rs.pack = [C('6'), C('K','D'), C('K','C')]; rs.pack.pop(); rs.pack.push(C('K','C')); rs.teams[0].opened = false; rs.needs[0] = 125;`);
-  P.selectRanks(['Q','Q','Q']); P.press('meld'); P.selectRanks(['J','J','J']); P.press('meld'); P.selectRanks(['10','10','10']); P.press('meld'); P.selectRanks(['5','5','5']); P.press('meld');
+  P.rig(`rs.hands[0] = many('Kx2 Qx4 Jx4 10x3 9x3 8'); rs.pack = [C('6'), C('K','D'), C('K','C')]; rs.teams[0].opened = false; rs.needs[0] = 125;`);
+  P.selectRanks(['Q','Q','Q','Q']); P.press('meld'); P.selectRanks(['J','J','J','J']); P.press('meld'); P.selectRanks(['10','10','10']); P.press('meld');
   P.press('pack');
-  expect(P.ev('rs.teams[0].opened') === true, 'should open: 105 + pair 20 = 125. Notice: ' + P.notice());
+  expect(P.ev('rs.teams[0].opened') === false, 'two Kings must not be enough to open with the pack');
+  expect(/three natural/.test(P.notice()), 'notice should explain the three-card requirement: ' + P.notice());
+  return P;
+});
+test('House rule: pack opening points must be met without the top card', () => {
+  const P = page(); humanTurn(P);
+  // K group (3 kings = 30) + Q x3 (30) + J x3 (30) = 90 < 125: the top king must not make up the difference
+  P.rig(`rs.hands[0] = many('Kx3 Qx3 Jx3 9x3 8x2'); rs.pack = [C('6'), C('K','D'), C('K','C')]; rs.teams[0].opened = false; rs.needs[0] = 125;`);
+  P.selectRanks(['K','K','K']); P.press('meld'); P.selectRanks(['Q','Q','Q']); P.press('meld'); P.selectRanks(['J','J','J']); P.press('meld');
+  P.press('pack');
+  expect(P.ev('rs.teams[0].opened') === false, 'should not open: points short without the top card');
+  return P;
+});
+test('House rule: a wild meld that covers the points opens without a clean triple', () => {
+  const P = page(); humanTurn(P, 'play');
+  P.rig(`rs.hands[0] = many('JKx4 2x3 9x2 5x2'); rs.teams[0].opened = false; rs.needs[0] = 125;`);
+  P.selectRanks(['JK','JK','JK','JK','2','2','2']); P.press('meld');
+  expect(!P.err(), 'staging wild meld failed: ' + P.err());
+  P.press('commit');
+  expect(P.ev('rs.teams[0].opened') === true, 'wild canasta worth 260 should open without a clean: ' + P.notice());
+  expect(P.ev("rs.teams[0].melds.some(m => m.rank === 'W' && m.cards.length === 7 && m.closed)"), 'wild canasta should be on the table');
+  return P;
+});
+test('House rule: after opening you only need one card to discard (talon is set aside)', () => {
+  const P = page(); humanTurn(P, 'play');
+  P.rig(`rs.hands[0] = many('Kx3 Qx3 Jx3 10x3 4'); rs.teams[0].opened = false; rs.needs[0] = 120; rs.stock = rs.stock.length >= 20 ? rs.stock : many('4x30');`);
+  const left = P.ev('rs.hands[0].length');
+  P.selectRanks(['K','K','K']); P.press('meld'); P.selectRanks(['Q','Q','Q']); P.press('meld'); P.selectRanks(['J','J','J']); P.press('meld'); P.selectRanks(['10','10','10']); P.press('meld');
+  P.press('commit');
+  expect(P.ev('rs.teams[0].opened') === true, 'should open leaving 1 card: ' + P.notice() + ' hand ' + left);
+  P.rig(`sel.clear(); sel.add(rs.hands[0][0].id)`);
+  P.press('discard');
+  expect(P.ev('rs.ended') === false, 'discarding the last card after opening must not end the round when a talon is coming');
+  expect(P.ev('rs.talon[0].length') > 0, 'talon should be set aside');
+  return P;
+});
+test('House rule: taking the pack lays the pair too (eighth card blocked)', () => {
+  const P = page(); humanTurn(P);
+  P.rig(`rs.teams[0].opened = true; rs.teams[0].melds.push({rank:'9', cards:many('9x4'), closed:false, owner:0}); rs.hands[0] = many('9x2 Kx3 Qx3 Jx3 4'); rs.pack = [C('5'), C('6'), C('9','D')];`);
+  P.press('pack');
+  expect(P.ev("rs.teams[0].melds.find(m => m.rank === '9').cards.length") === 7, 'top card + pair should make 7 nines');
+  const Q = page(); humanTurn(Q);
+  Q.rig(`rs.teams[0].opened = true; rs.teams[0].melds.push({rank:'9', cards:many('9x5'), closed:false, owner:0}); rs.hands[0] = many('9x2 Kx3 Qx3 Jx3 4'); rs.pack = [C('5'), C('6'), C('9','D')];`);
+  Q.press('pack');
+  expect(Q.ev("rs.teams[0].melds.find(m => m.rank === '9').cards.length") === 5, 'five down plus two in hand must not allow the pack');
+  return Q;
+});
+test('House rule: Dream Hand 5 works without wilds, and with a set of deuces', () => {
+  const P = page();
+  expect(P.ev("detectSpecial(many('Kx5 Qx5 Jx4')).name") === 'Dream Hand +5', 'natural 5-5-4 should be Dream Hand 5');
+  expect(P.ev("detectSpecial(many('Kx5 2x5 Jx4')).name") === 'Dream Hand +5', 'five deuces as one of the sets');
+  expect(P.ev("detectSpecial(many('Kx5 Qx5 JKx4')).name") === 'Dream Hand +4', 'four jokers is Dream Hand 4');
+  expect(P.ev("(detectSpecial(many('Kx5 Qx4 Jx3 10x2'))||{}).name") === 'Blast Off', 'blast off is not a dream hand');
   return P;
 });
 test('Dream Hand +4 ends the game on the spot', () => {

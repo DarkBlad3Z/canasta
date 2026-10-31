@@ -7,12 +7,12 @@ Last updated: 2026-10-31. Owner: Vince Nguyen. Footer author on booklet: "J. Lee
 
 | Item | File | Notes |
 |---|---|---|
-| Booklet "Canasta Made Easy" (Modern American Canasta) | `Canasta_Made_Easy.docx`, `Canasta_Made_Easy.pdf` (21 pages, letter), `Canasta_Made_Easy_online.html` | Built from `build/content.py` + `build/make.py` (python-docx; PDF via LibreOffice). Footer: "Created by J. Lee | Modern American Canasta". |
+| Booklet "Canasta Made Easy" (Modern American Canasta) | `Canasta_Made_Easy.docx`, `Canasta_Made_Easy.pdf` (22 pages, letter), `Canasta_Made_Easy_online.html` | Built from `build/content.py` + `build/make.py` (python-docx; PDF via LibreOffice). Footer: "Created by J. Lee | Modern American Canasta". |
 | Printable booklet | `Canasta_Made_Easy_Booklet_Print.pdf` | 12 landscape letter sheets, saddle-stitch order (pypdf imposition of the PDF). Print double-sided, flip on short edge, fold. |
 | Practice game | `Canasta_Practice_Game.html` = `index.html` (identical single file) | Published as Cowork artifact id `canasta-practice-game`. Deploy to GitHub Pages by uploading `index.html`. |
 | Game source | `game_build/` : `template.html`, `engine.js`, `drills.js`, `guide.js`, `scenarios.js` (26 tests), `bot.js` | Assemble: replace markers `/*ENGINE*/`, `/*DRILLS*/`, `/*GUIDE*/` in `template.html` with the contents of `engine.js`, `drills.js`, `guide.js`; write to `game.html`; copy to the two published names. |
 
-Pending small item: the online booklet page (`Canasta_Made_Easy_online.html`) has not been rebuilt, so it lacks the new footer (source `build/make.py` already updated).
+Booklet rebuilt Oct 31 with the house rules and the J. Lee footer (docx, PDF, booklet-print PDF and online page).
 
 ## 2. Game features (all done)
 
@@ -29,7 +29,13 @@ Pending small item: the online booklet page (`Canasta_Made_Easy_online.html`) ha
 ## 3. Rule decisions
 
 - Where official rules and group notes differ, the game generally used official rules, EXCEPT these (decided by Vince):
-  - **Pack pickup follows the GROUP rule**: you always need two natural cards in hand matching the top card (even to add to an existing meld). So nobody can take the pack with one card. No extra notes about official rules should appear anywhere.
+  - **House rules (confirmed by the group, Oct 31)**: the game and booklet follow the library group's house rules; the booklet shows "Differs from official rules" notes beside each.
+    - Opening: a meld of only 2s/jokers (3+ cards) can open if its own points cover 125/155/180 (no clean needed); otherwise a clean triple is required. Open with as many cards as needed; only one card to discard is required when a talon is coming (talon set aside, joins hand next turn). Not when opening with the pack (no talon).
+    - Pack after opening: hold two natural cards matching the top card; the top card AND the pair go on the meld; blocked if the meld already has 5+ cards.
+    - Open with the pack: three natural cards of the top rank in the staged opening meld; the opening (points + clean) must stand without the top card; the top card is then added to that meld as an extra, not counted for points. No talon.
+    - Going out: ask partner once per round; not with an unfinished Ace/7/wild canasta; last card may be wild only if it is all you have.
+    - 3s: laid down as soon as received (talon 3s on next turn); Straight special hand is the exception.
+    - Blast Off and Dream Hand 5 need no wilds (a group of 2s or jokers may be one set; Dream 5 = any 5-5-4); Dream Hand 4 needs four matching wilds.
 - Special hand points range 2,000 to 3,500; Dream hands 8,500. Special hand colors: blue = no wilds allowed (Pairs no wilds, Garbage); light yellow = must include wilds (Pairs with wilds, Miami pairs, Straight, Triples, Quads, Dream hand 4); light pink = wilds or no wilds (Zip code, Blast off, Dream hand 5).
 - First to 8,500 wins. Opening meld 125 / 155 (at 3,000+) / 180 (at 5,000+).
 

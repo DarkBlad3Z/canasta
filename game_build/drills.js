@@ -23,7 +23,7 @@ const SP_INFO = {
   'Triples': ['Three sets of four of a kind plus a pair of matching wilds.', 3500],
   'Quads': ['Four sets of three of a kind plus a pair of matching wilds.', 3500],
   'Dream Hand +4': ['Two sets of five of a kind plus four matching wilds.', 8500],
-  'Dream Hand +5': ['A set of five, a set of four, plus five wilds of any kind.', 8500]
+  'Dream Hand +5': ['Shape 5-5-4: any two sets of five and one set of four. Wilds are allowed but not required (a set of 2s or jokers counts as a set).', 8500]
 };
 const SP_NAMES = Object.keys(SP_INFO);
 /* colour coding from the group's special-hands sheet: nw = blue (no wilds), mw = yellow (must include wilds), ew = pink (wilds or no wilds) */
@@ -43,15 +43,15 @@ const SP_ROWS = [
   ['Triples', 'Triples (4x4x4x2)', 'Three 4-of-a-kind, with a pair of matching wilds'],
   ['Quads', 'Quads (3x3x3x3x2)', 'Four 3-of-a-kind, with a pair of jokers OR deuces'],
   ['Dream Hand +4', 'Dream Hand 4 (5x5x4)', 'Two 5-of-a-kind, 4 matching wilds'],
-  ['Dream Hand +5', 'Dream Hand 5 (5x5x4)', '<b>Two interpretations (to settle with your group):</b><br><b>A. Official rules:</b> one 5-of-a-kind, one 4-of-a-kind, plus 5 wilds (any mix of 2s and jokers). Must include wilds (yellow).<br><b>B. Your group\'s sheet:</b> one 5-of-a-kind, one 4-of-a-kind, one 5-of-a-kind, any cards, with or without wilds (pink).<br><i>The game currently accepts only A.</i>']
+  ['Dream Hand +5', 'Dream Hand 5 (5x5x4)', 'Two 5-of-a-kind and one 4-of-a-kind, any cards. Wilds optional (a 4-of-a-kind can be four deuces or four jokers; a 5-of-a-kind cannot be jokers)']
 ];
-const DREAM5_NOTE = ' Dream Hand 5 has two interpretations: officially it needs five wilds; your group\'s sheet allows any 5-4-5. The game accepts only the official version for now.';
+const DREAM5_NOTE = '';
 function specialsModal(){
   let h = `<div class="modalbg"><div class="modal"><h2>Special hands</h2><p>Declare with exactly 14 cards, before your team opens. The color tells you whether wilds are needed.</p>`;
   h += `<div class="klegend">${['nw','mw','ew'].map(k => `<span class="kchip k-${k}">${KIND_TXT[k]}</span>`).join('')}</div>`;
   h += `<table class="sptable"><tr><th>Special hand</th><th>Cards required</th><th>Points</th></tr>`;
   for (const [key, label, cards] of SP_ROWS) h += `<tr class="k-${SP_KIND[key]}"><td><b>${label}</b></td><td>${cards}</td><td>${SP_INFO[key][1].toLocaleString()}</td></tr>`;
-  h += `</table><p class="empty">Only a Straight may contain a 3. Dream hands (8,500) win the game. Miami Pairs is 2,500 here (the official rule); one printout shows 3,000.</p><button class="btn primary" data-act="closemodal">Close</button></div></div>`;
+  h += `</table><p class="empty">Only a Straight may contain a 3. Dream hands (8,500) win the game. Miami Pairs is 2,500 here.</p><button class="btn primary" data-act="closemodal">Close</button></div></div>`;
   return h;
 }
 function genSpecial(name){
@@ -72,7 +72,7 @@ function genSpecial(name){
     case 'Triples': sets([4,4,4], ranks); cards.push(...mkSet(wk(), 2)); break;
     case 'Quads': sets([3,3,3,3], ranks); cards.push(...mkSet(wk(), 2)); break;
     case 'Dream Hand +4': sets([5,5], ranks); cards.push(...mkSet(wk(), 4)); break;
-    case 'Dream Hand +5': { sets([5,4], ranks); const j = rnd(5); for (let i = 0; i < 5; i++) cards.push(mkc(i < j ? 'JK' : '2')); break; }
+    case 'Dream Hand +5': if (Math.random() < 0.5) sets([5,5,4], ranks); else { sets([5,4], ranks); const j = rnd(5); for (let i = 0; i < 5; i++) cards.push(mkc(i < j ? 'JK' : '2')); } break;
   }
   return cards;
 }
@@ -297,7 +297,7 @@ function noSpecialWhy(cards){
     if ((w2 && w2 !== 2) || (wj && wj !== 2)) return 'In a pairs hand the wild cards must come as matching pairs (two deuces, two jokers).';
     if (wilds && !(nat.A === 2 && nat['7'] === 2)) return 'A pairs hand that uses wilds must also include a pair of Aces and a pair of 7s.';
   }
-  if (w2 && wj && wilds !== 5 && !(w2 === 2 && wj === 2)) return 'Wild cards must form their own matching group (all deuces or all jokers). Mixed wilds only appear in Miami Pairs (a pair of each) and Dream Hand +5.';
+  if (w2 && wj && wilds !== 5 && !(w2 === 2 && wj === 2)) return 'Wild cards must form their own matching group (all deuces or all jokers). Mixed wilds only appear in Miami Pairs (a pair of each).';
   if (!wilds && shape === '4-4-3-2-1') return 'So close to Garbage (4-4-3-3), but one group is broken up.';
   return `The groups (${shape}${wilds ? ' plus ' + wilds + ' wild' + (wilds > 1 ? 's' : '') : ''}) do not match any special shape.`;
 }

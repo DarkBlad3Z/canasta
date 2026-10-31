@@ -173,7 +173,11 @@ function keepAfter(team, rank, newSize, pureAfter, seat){
 function checkOpeningGroup(rs, cards){
   if (cards.some(isThree)) return bad('3s are never melded in sets. They go in your 3s row.');
   const nats = cards.filter(c => !isWild(c)), wl = cards.length - nats.length;
-  if (!nats.length) return bad('The opening meld cannot be made only of wilds. It needs natural cards (a clean triple).');
+  if (!nats.length){   // house rule: a meld of only 2s and jokers may open if its own points cover the minimum
+    if (cards.length < 3) return bad('A meld needs at least 3 cards.');
+    if (cards.length > 7) return bad('A canasta is 7 cards. A meld cannot go over 7.');
+    return {ok:true, rank:'W', clean:false, wildOnly:true, wilds:cards.length};
+  }
   const r = nats[0].rank;
   if (nats.some(c => c.rank !== r)) return bad('A meld uses one rank only (plus wilds).');
   if (deadRank(rs, r)) return bad(`${rankName(r)} are dead: a canasta of them is already complete.`);
@@ -189,14 +193,14 @@ function checkOpeningGroup(rs, cards){
 function checkOpening(rs, seat, groups, extraPts = 0){
   const t = teamOf(seat), need = rs.needs[t];
   if (!groups.length) return bad('Select cards and add them to your opening meld first.');
-  let pts = 0, clean = false; const seen = new Set();
+  let pts = 0, clean = false, wildCover = false; const seen = new Set();
   for (const g of groups){
     const r = checkOpeningGroup(rs, g); if (!r.ok) return r;
-    if (seen.has(r.rank)) return bad('Use one group per rank in the opening meld.');
-    seen.add(r.rank); if (r.clean) clean = true; pts += sumVal(g);
+    if (seen.has(r.rank)) return bad(r.rank === 'W' ? 'Use one wild (2s and jokers) group in the opening meld.' : 'Use one group per rank in the opening meld.');
+    seen.add(r.rank); if (r.clean) clean = true; if (r.wildOnly && sumVal(g) >= need) wildCover = true; pts += sumVal(g);
   }
   pts += extraPts;
-  if (!clean) return {ok:false, pts, need, why:'Your opening meld needs a clean triple: 3 or more natural cards of one rank with no wilds.'};
+  if (!clean && !wildCover) return {ok:false, pts, need, why:'Your opening meld needs a clean triple (3 or more natural cards of one rank, no wilds), unless a meld of only 2s and jokers is worth the required points by itself.'};
   if (pts < need) return {ok:false, pts, need, why: extraPts ? `This opening meld is worth ${pts} points including your pair (${extraPts}). Your team needs ${need}. The top card of the pack does not count.` : `This opening meld is worth ${pts} points. Your team needs ${need}.`};
   return {ok:true, pts, need};
 }
@@ -206,8 +210,8 @@ function removeFromHand(hand, cards){
 function applyOpening(rs, seat, groups){
   const team = rs.teams[teamOf(seat)];
   for (const g of groups){
-    const r = g.find(c => !isWild(c)).rank, wl = g.filter(isWild).length;
-    const m = {rank:r, cards:g.slice(), pure:(r === '7' || (r === 'A' && wl === 0)), closed:false, owner:seat};
+    const nat = g.find(c => !isWild(c)), r = nat ? nat.rank : 'W', wl = g.filter(isWild).length;
+    const m = {rank:r, cards:g.slice(), pure:(r !== 'W' && (r === '7' || (r === 'A' && wl === 0))), closed:false, owner:seat};
     team.melds.push(m); markFresh(rs, seat, m, g); closeIfFull(rs, m, SHORT[seat]);
   }
   team.opened = true; rs.openedCount++;
@@ -220,7 +224,9 @@ function opening(rs, seat, groups){
   const h = rs.hands[seat], all = groups.flat();
   const inHand = all.filter(c => h.some(x => x.id === c.id)).length;
   const remaining = h.length - inHand;
-  if (remaining < 2) return bad('You must keep at least 2 cards: one to discard now and one to hold (discarding your last card means going out).');
+  const talonComing = rs.stock.length >= 9;   // house rule: with a talon coming you only need one card left, to discard
+  if (remaining < 1) return bad('You must keep a card to discard.');
+  if (remaining < 2 && !talonComing) return bad('You must keep at least 2 cards: there is no talon to take (fewer than 9 cards in the draw pile), so discarding your last card would mean going out.');
   removeFromHand(h, all);
   applyOpening(rs, seat, groups);
   rs.pendingTalon = {seat, n: rs.openedCount === 1 ? 4 : 3};
@@ -286,13 +292,14 @@ function packInfo(rs, seat){
   const team = rs.teams[teamOf(seat)], h = rs.hands[seat];
   if (deadRank(rs, top.rank)) return bad(`${rankName(top.rank)} are dead, so you cannot use that card.`);
   const ex = findMeld(team, top.rank);
-  if (ex && ex.cards.length >= 5) return bad(`Your team already has ${ex.cards.length} cards in ${rankName(top.rank)}. Taking the pack would push it past seven.`);
+  if (ex && ex.cards.length >= 5) return bad(`Your team already has ${ex.cards.length} cards in ${rankName(top.rank)}. Taking the pack (the top card plus your two) would push it past seven.`);
   const rest = rs.pack.length - 1;
   if (!team.opened) return {ok:true, mode:'open', top};
   if (ex){
-    if (h.filter(c => c.rank === top.rank).length < 2) return bad(`To take the pack you must hold two natural ${rankName(top.rank)} in your hand to match the top card, even when adding to your ${rankName(top.rank)} meld.`);
-    if (h.length + rest < keepAfter(team, top.rank, ex.cards.length + 1, ex.pure, seat)) return bad('That would leave you without a card you can legally discard.');
-    return {ok:true, mode:'add', meld:ex, top};
+    const apair = h.filter(c => c.rank === top.rank).slice(0, 2);
+    if (apair.length < 2) return bad(`To take the pack you must hold two natural ${rankName(top.rank)} in your hand to match the top card, even when adding to your ${rankName(top.rank)} meld.`);
+    if (h.length - 2 + rest < keepAfter(team, top.rank, ex.cards.length + 3, ex.pure, seat)) return bad('That would leave you without a card you can legally discard.');
+    return {ok:true, mode:'add', meld:ex, top, pair:apair};
   }
   const pair = h.filter(c => c.rank === top.rank).slice(0, 2);
   if (pair.length < 2) return bad(`To take the pack you need two natural ${rankName(top.rank)} in your hand to match the top card (or an existing ${top.rank} meld to add it to).`);
@@ -305,7 +312,7 @@ function pickPack(rs, seat){
   if (info.mode === 'open') return bad('Your team has not opened yet. Stage an opening meld first, then pick up the pack.');
   const team = rs.teams[teamOf(seat)], h = rs.hands[seat];
   const top = rs.pack.pop();
-  if (info.mode === 'add'){ info.meld.cards.push(top); markFresh(rs, seat, info.meld, [top]); closeIfFull(rs, info.meld, SHORT[seat]); }
+  if (info.mode === 'add'){ removeFromHand(h, info.pair); info.meld.cards.push(top, ...info.pair); markFresh(rs, seat, info.meld, [top, ...info.pair]); closeIfFull(rs, info.meld, SHORT[seat]); }
   else {
     removeFromHand(h, info.pair);
     const m = {rank:top.rank, cards:[top, ...info.pair], pure:(top.rank === '7' || top.rank === 'A'), closed:false, owner:seat};
@@ -316,26 +323,26 @@ function pickPack(rs, seat){
   rs.log.push(`${SHORT[seat]} picked up the pack (${n + 1} cards) using the ${cardName(top)}.`);
   return {ok:true, top, n:n + 1};
 }
-/* opening by taking the pack: staged groups meet the minimum on their own; top card + a natural pair from hand are set aside */
+/* opening by taking the pack (house rule): your staged opening meld must hold three naturals of the top card's rank and already
+   meet the points and the clean on its own; the top card is then added to that meld as an extra card and does not count for points */
 function pickPackOpening(rs, seat, groups){
   if (rs.phase !== 'draw') return bad('You have already drawn this turn.');
   const info = packInfo(rs, seat); if (!info.ok) return info;
   if (info.mode !== 'open') return bad('Your team has already opened.');
   const top = info.top, h = rs.hands[seat];
-  if (groups.some(g => g.some(c => !isWild(c) && c.rank === top.rank)))
-    return bad(`Your opening meld already uses ${rankName(top.rank)}. Leave your ${rankName(top.rank)} in your hand: the top card and your pair become their own meld.`);
-  const pair = h.filter(c => c.rank === top.rank && !groups.flat().some(x => x.id === c.id)).slice(0, 2);
-  if (pair.length < 2) return bad(`To take the pack you need two natural ${rankName(top.rank)} in your hand to match the top card.`);
-  const res = checkOpening(rs, seat, groups, sumVal(pair)); if (!res.ok) return res;
+  const tg = groups.find(g => g.filter(c => !isWild(c) && c.rank === top.rank).length >= 3);
+  if (!tg) return bad(`To open with the pack you need three natural ${rankName(top.rank)} in your staged opening meld. The top card is added to that meld afterwards and does not count for points.`);
+  if (tg.length >= 7) return bad(`That ${rankName(top.rank)} meld is already seven cards, so the top card has nowhere to go.`);
+  const res = checkOpening(rs, seat, groups); if (!res.ok) return res;
   const all = groups.flat();
-  const remaining = h.filter(c => !all.some(x => x.id === c.id) && !pair.some(x => x.id === c.id)).length + rs.pack.length - 1;
+  const remaining = h.filter(c => !all.some(x => x.id === c.id)).length + rs.pack.length - 1;
   if (remaining < 2) return bad('That would leave you without a card to discard.');
-  removeFromHand(h, all); removeFromHand(h, pair);
+  removeFromHand(h, all);
   rs.pack.pop();
   applyOpening(rs, seat, groups);
   const team = rs.teams[teamOf(seat)];
-  const m = {rank:top.rank, cards:[top, ...pair], pure:(top.rank === '7' || top.rank === 'A'), closed:false, owner:seat};
-  team.melds.push(m); markFresh(rs, seat, m, m.cards); closeIfFull(rs, m, SHORT[seat]);
+  const m = team.melds.find(x => x.owner === seat && x.rank === top.rank && x.cards.some(c => tg.some(t => t.id === c.id)));
+  m.cards.push(top); markFresh(rs, seat, m, [top]); closeIfFull(rs, m, SHORT[seat]);
   const n = rs.pack.length; h.push(...rs.pack); rs.pack = [];
   rs.pickedPack = true; rs.phase = 'play'; rs.pendingTalon = null;
   rs.log.push(`${SHORT[seat]} opened (${res.pts} points) and picked up the pack. No talon when you open with the pack.`);
@@ -343,6 +350,7 @@ function pickPackOpening(rs, seat, groups){
 }
 
 /* ---------- discarding ---------- */
+const talonAfter = (rs, seat) => !!(rs.pendingTalon && rs.pendingTalon.seat === seat && rs.stock.length >= 9);   // a talon is about to arrive, so an empty hand is not going out
 function discardCheck(rs, seat, card){
   const h = rs.hands[seat];
   if (isThree(card)) return bad('3s can never be discarded.');
@@ -357,7 +365,7 @@ function discardCheck(rs, seat, card){
       if (alt) return bad('The discard pile is empty. A 7, Ace, wild or dead card cannot be the first discard (the SWAD rule).');
     }
   }
-  if (h.length === 1){
+  if (h.length === 1 && !talonAfter(rs, seat)){
     const g = goOutCheck(rs, seat); if (!g.ok) return g;
   }
   return {ok:true};
@@ -367,8 +375,9 @@ function discard(rs, seat, cardId){
   const h = rs.hands[seat], card = h.find(c => c.id === cardId);
   if (!card) return bad('That card is not in your hand.');
   const chk = discardCheck(rs, seat, card); if (!chk.ok) return chk;
+  const talonOK = talonAfter(rs, seat);
   removeFromHand(h, [card]);
-  if (!h.length){
+  if (!h.length && !talonOK){
     rs.pack.push(card); rs.lastDiscard = {id:card.id, seat, t:rs.turnNo}; rs.log.push(`${SHORT[seat]} went out!`);
     endRound(rs, 'out', seat); return {ok:true, out:true, card};
   }
@@ -419,7 +428,9 @@ function detectSpecial(cards){
   if (pairWild && only(counts, [4,4,4])) res.push({name:'Triples', points:3500});
   if (pairWild && only(counts, [3,3,3,3])) res.push({name:'Quads', points:3500});
   if (((w2 === 4 && wj === 0) || (wj === 4 && w2 === 0)) && only(counts, [5,5])) res.push({name:'Dream Hand +4', points:8500, dream:true});
-  if (w2 + wj === 5 && only(counts, [5,4])) res.push({name:'Dream Hand +5', points:8500, dream:true});
+  if (w2 + wj === 5 && only(counts, [5,4])) res.push({name:'Dream Hand +5', points:8500, dream:true});   // official: five wilds of any mix
+  { const rg = counts.slice(); if (w2) rg.push(w2); if (wj) rg.push(wj);   // house rule: any 5-5-4 of ranks, wilds optional (a group of 2s or jokers counts as a rank)
+    if (only(rg, [5,5,4]) && !res.some(x => x.dream)) res.push({name:'Dream Hand +5', points:8500, dream:true}); }
   res.sort((a, b) => b.points - a.points);
   return res[0] || null;
 }
@@ -541,21 +552,17 @@ function planOpening(rs, seat, needOverride, extra = 0){
   if (!sol.ok) return null;
   return checkOpening(rs, seat, sol.groups, rs.needs[teamOf(seat)] - need).ok ? sol.groups : null;
 }
-/* opening by taking the pack: plan an opening from cards that do not use the top card's rank */
+/* opening by taking the pack: the normal opening plan must already contain three naturals of the top card's rank */
 function packOpenPlan(rs, seat){
   const info = packInfo(rs, seat);
   if (!info.ok || info.mode !== 'open') return null;
   const R = info.top.rank, h = rs.hands[seat];
-  if (R === '7' || R === 'A') return null; // strategy: the top card + pair would start a clean 7s/Aces meld (-2,500 if unfinished)
-  if (h.filter(c => c.rank === R).length < 2) return null;
-  const save = rs.hands[seat];
-  rs.hands[seat] = h.filter(c => c.rank !== R);
-  let plan = null;
-  const pairPts = sumVal(h.filter(c => c.rank === R).slice(0, 2));
-  const extra = (h.filter(c => c.rank === R).length - 2) + (rs.pack.length - 1); // cards you will still hold besides the planned meld
-  try { plan = planOpening(rs, seat, Math.max(0, rs.needs[teamOf(seat)] - pairPts), extra); } finally { rs.hands[seat] = save; }
-  if (!plan) return null;
-  const used = plan.flat().length, remaining = h.length - used - 2 + rs.pack.length - 1;
+  if (R === '7' || R === 'A') return null; // strategy: avoid starting 7s/Aces with the pack (-2,500 if unfinished)
+  if (h.filter(c => c.rank === R).length < 3) return null;
+  const plan = planOpening(rs, seat); if (!plan) return null;
+  const g = plan.find(g => g.filter(c => !isWild(c) && c.rank === R).length >= 3);
+  if (!g || g.length >= 7) return null;
+  const remaining = h.length - plan.flat().length + rs.pack.length - 1;
   return remaining >= 2 ? plan : null;
 }
 function planOpeningGreedy(rs, seat, needArg, extra = 0){
@@ -739,7 +746,7 @@ function hintFor(rs, seat){
     if (team.opened && info.ok && info.mode !== 'open'){
       const risky = info.top.rank === '7' || info.top.rank === 'A';
       if (info.mode === 'add' || (!risky && rs.pack.length >= 2))
-        return {kind:'pack', text:`Take the pack (${rs.pack.length} cards): the top card (${cardName(info.top)}) ${info.mode === 'add' ? `goes straight onto your ${rankName(info.top.rank)} meld` : 'starts a new meld with the highlighted pair from your hand'}. Click "Pick up pack".`, ids:info.pair ? info.pair.map(c => c.id) : []};
+        return {kind:'pack', text:`Take the pack (${rs.pack.length} cards): the top card (${cardName(info.top)}) ${info.mode === 'add' ? `goes onto your ${rankName(info.top.rank)} meld together with the highlighted pair from your hand` : 'starts a new meld with the highlighted pair from your hand'}. Click "Pick up pack".`, ids:info.pair ? info.pair.map(c => c.id) : []};
     }
     if (!team.opened && rs.pack.length >= 3){
       const plan = packOpenPlan(rs, seat);

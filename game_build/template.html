@@ -502,7 +502,7 @@ function doPack(){
   if (!info.ok){ say(info.why, 'err'); render(); return; }
   let r;
   if (info.mode === 'open'){
-    if (!staged.length){ say('To open with the pack, first stage your opening meld (select cards, click "Add to opening meld"). Then click "Pick up pack". The top card and a natural pair from your hand are added as a separate meld.', 'err'); render(); return; }
+    if (!staged.length){ say('To open with the pack, first stage your whole opening meld (select cards, click "Add to opening meld"). It must include three natural cards of the top card\'s rank and meet the points and the clean on its own. Then click "Pick up pack": the top card is added to that meld as an extra card.', 'err'); render(); return; }
     r = pickPackOpening(rs, 0, staged);
     if (r.ok) staged = [];
   } else r = pickPack(rs, 0);
@@ -583,8 +583,7 @@ function mapToHand(group){
 function openSteps(h){
   const plan = h.groups, viaPack = h.kind === 'packopen';
   if (staged.length){
-    const pairPts = viaPack ? sumVal(rs.hands[0].filter(c => c.rank === h.top.rank).slice(0, 2)) : 0;
-    const chk = checkOpening(rs, 0, staged, pairPts);
+    const chk = checkOpening(rs, 0, staged);
     if (chk.ok) return {text: viaPack ? `Your staged meld (${chk.pts} points) is enough. Now click "Pick up pack" to open and take the pack.`
       : (rs.phase === 'play' ? `Your staged opening meld is ready (${chk.pts} points). Click "Lay down opening meld".` : `Your staged meld is worth ${chk.pts} points. Draw a card, then click "Lay down opening meld".`), ids:[]};
     if (!staged.every(g => plan.some(p => sameGroup(g, p)))) return {text:'Your staged cards are not the suggested opening. Click "Undo staging", then ask for a hint again.', ids:[]};
@@ -592,7 +591,7 @@ function openSteps(h){
   const left = plan.filter(p => !staged.some(g => sameGroup(g, p)));
   const step = plan.length - left.length + 1, g = left[0];
   const lead = viaPack
-    ? `You can open by taking the pack (${rs.pack.length} cards)! The ${cardName(h.top)} on top plus your pair of ${rankName(h.top.rank)} become their own meld. Your pair counts toward the minimum but the top card does not, so first stage the rest of your opening meld (${h.pts} points from your other cards).`
+    ? `You can open by taking the pack (${rs.pack.length} cards)! Your opening meld must stand on its own, with three natural ${rankName(h.top.rank)} in it. The ${cardName(h.top)} on top is then added to that meld as an extra card and does not count for points. Stage your opening meld (${h.pts} points).`
     : `You can open: ${h.pts} points, enough for your ${rs.needs[0]} minimum.`;
   return {text:`${lead} Step ${step} of ${plan.length}: select the highlighted ${groupLabel(g)} and click "Add to opening meld".${step === plan.length ? (viaPack ? ' Then click "Pick up pack".' : ' Then click "Lay down opening meld".') : ''}`, ids:mapToHand(g)};
 }
@@ -881,7 +880,9 @@ function rulesModal(){
   <li><b>Canastas:</b> clean 500, mixed 300, natural 7s or Aces 2,500, all deuces 3,000, four jokers + 2s 2,500, deuces with 1 to 3 jokers 2,000. Going out +100.</li>
   <li><b>3s:</b> 100 / 300 / 500 / 1,000 for 1 / 2 / 3 / 4 of a color. Two canastas: added. One: neutral. None: subtracted. 3s left in hand count against you.</li>
   <li><b>Penalties:</b> unfinished 7s or clean Aces meld -2,500, unfinished wild meld -2,000, 3+ Aces or 3+ 7s in one hand -1,500 plus card values. No canasta: everything on the table is subtracted.</li>
-  <li><b>Open question:</b> Dream Hand 5. Official rules: 5-of-a-kind + 4-of-a-kind + five wilds. Your group's sheet may mean any 5-4-5 with or without wilds. The game follows the official version until your group decides. Miami Pairs is 2,500 here; one printout says 3,000.</li>
+  <li><b>Opening:</b> you may open with as few or as many cards as it takes; you only need one card left to discard if a talon is coming (the talon is set aside and joins your hand next turn). A meld of only 2s and jokers can open if its own points cover the minimum; otherwise the opening needs a clean triple.</li>
+  <li><b>Opening with the pack:</b> your staged opening meld must hold three natural cards of the top card's rank and meet the points and the clean without the top card; the top card is then added to that meld and does not count. No talon.</li>
+  <li><b>Special hands:</b> Blast Off and Dream Hand 5 do not need wilds (a group of 2s or jokers can be one of the sets); Dream Hand 4 needs four matching wilds. Miami Pairs is 2,500 here.</li>
   <li><b>Special hands:</b> declare with exactly 14 cards (last card from the draw pile) before your team opens, or on your first turn after your partner opens. The round ends at once, flat points only. Dream hands (8,500) win the game.</li>
   <li><b>Hints and computer players:</b> they follow one sensible strategy, not the only one. They avoid starting a clean 7s or clean Aces meld with fewer than 6 cards (it costs -2,500 if unfinished), add a wild to Aces when opening (a mixed Aces meld carries no penalty), and never meld down to a card they could not legally discard.</li>
   <li><b>Practice shortcuts:</b> if you hold only illegal first discards on an empty pile, the game lets you discard one instead of making you take back melds. The computer players do not chase special hands on purpose. Each team keeps one meld per rank.</li></ul>
