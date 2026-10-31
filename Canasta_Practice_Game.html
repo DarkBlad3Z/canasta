@@ -88,6 +88,22 @@ header.top h1{font-family:Georgia,serif;font-size:22px;margin:0;color:#1F5D3A}
   .melds .card.mini .s,.threes .card.mini .s{font-size:22px}
   .meld .ml{font-size:16.5px}.meld .cs .card{margin-right:-18px}.meld{padding:8px 11px}.melds{gap:12px}
 }
+/* compact cards on wide screens so the whole table fits without scrolling */
+@media(min-width:1000px){
+  .card{width:40px;height:58px;font-size:14px;padding:2px 3px;border-radius:5px}.card .s{font-size:18px;margin-top:-3px}
+  .melds .card.mini,.threes .card.mini{width:34px;height:50px;font-size:14px;padding:2px 3px}
+  .melds .card.mini .s,.threes .card.mini .s{font-size:16px}
+  .meld .ml{font-size:13px;margin-bottom:2px}.meld .cs .card{margin-right:-13px}.meld{padding:4px 8px}.melds{gap:6px}
+  .table.wide{padding:10px 14px;gap:6px 12px}.table .seat{padding:6px 12px}.table.wide .melds{gap:5px}
+  .hand{min-height:70px;padding:8px 6px 2px}.felt{padding:6px}.piles{gap:12px}
+  /* fixed-height play area: the green table takes whatever is left, hand + buttons stay at the bottom */
+  .gamecol{display:flex;flex-direction:column;height:calc(100vh - 24px);min-height:560px}
+  .gamecol>*{flex:0 0 auto}
+  .felt.table.wide>*{zoom:var(--z,1)}
+  .gamecol>.felt.table.wide{flex:1 1 0;min-height:260px;margin-bottom:6px;overflow:auto;grid-template-rows:auto 1fr auto;align-content:stretch}
+  .gamecol .panel,.gamecol .status,.gamecol .notice{margin-bottom:4px}.gamecol .status{margin:0 0 4px}
+  .gamecol .bar{margin:4px 0 0}
+}
 .threes{display:flex;gap:2px;align-items:center;font-size:12px;color:#33463a}
 .empty{color:#7a8a80;font-size:13px}
 .bar{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
@@ -105,7 +121,9 @@ header.top h1{font-family:Georgia,serif;font-size:22px;margin:0;color:#1F5D3A}
   .layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
   .logcol{position:sticky;top:10px}
   .logcol .panel{margin-bottom:0}
-  .logcol .feed{max-height:calc(100vh - 90px);min-height:300px;font-size:14px}
+  .logcol header.top{display:block;margin:0 0 8px}.logcol header.top h1{font-size:18px;margin:0 0 6px}.logcol header.top div{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.logcol header.top .btn{padding:6px 4px;font-size:12.5px;width:100%}
+  .logcol .scores{grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}.logcol .sc.mid{grid-column:1/3;display:flex;flex-wrap:wrap;gap:2px 12px;padding:5px 10px}.logcol .sc.mid .n{width:100%}.logcol .sc .v{font-size:22px}
+  .logcol .feed{max-height:calc(100vh - 300px);min-height:300px;font-size:14px}
 }
 .stage{border:2px dashed #7B4FB0;border-radius:8px;padding:6px 8px;margin:6px 0;background:#f6f1fb}
 .modalbg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow:auto;z-index:50}
@@ -423,6 +441,7 @@ function packInfo(rs, seat){
   const rest = rs.pack.length - 1;
   if (!team.opened) return {ok:true, mode:'open', top};
   if (ex){
+    if (h.filter(c => c.rank === top.rank).length < 2) return bad(`To take the pack you must hold two natural ${rankName(top.rank)} in your hand to match the top card, even when adding to your ${rankName(top.rank)} meld.`);
     if (h.length + rest < keepAfter(team, top.rank, ex.cards.length + 1, ex.pure, seat)) return bad('That would leave you without a card you can legally discard.');
     return {ok:true, mode:'add', meld:ex, top};
   }
@@ -1255,11 +1274,17 @@ function goodVoices(){
   try { return speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang) && !NOVELTY.test(v.name)).sort((a, b) => voiceScore(b) - voiceScore(a)).slice(0, 3); } catch (e) { return []; }
 }
 /* We count our own utterances instead of trusting speechSynthesis.speaking, which many voices report too early. */
-let speechBusy = 0, speechGen = 0, speechEnd = 0;
+let speechBusy = 0, speechGen = 0, speechEnd = 0, ffwd = false, pendingGo = null;   // ffwd: skip narration and the pause for the move currently waiting
+let lastCancel = 0;
+function cancelSpeech(){ try { speechSynthesis.cancel(); } catch (e) {} lastCancel = Date.now(); speechGen++; speechBusy = 0; speechEnd = 0; }
+/* Chrome quirks: speech can stall after cancel() or on long sessions, so wake it up now and then */
+setInterval(() => { try { if (voiceOn && speechSynthesis.speaking){ if (speechSynthesis.paused) speechSynthesis.resume(); } } catch (e) {} }, 3000);
+document.addEventListener('visibilitychange', () => { try { if (!document.hidden && speechSynthesis.paused) speechSynthesis.resume(); } catch (e) {} });
 function speak(t, interrupt){
-  if (!voiceOn || !canSpeak() || !t) return;
+  if (ffwd || !voiceOn || !canSpeak() || !t) return;
+  if (Date.now() - lastCancel < 120){ setTimeout(() => speak(t, interrupt), 130); return; }   // a speak() right after cancel() is dropped by some browsers
   try {
-    if (interrupt){ speechSynthesis.cancel(); speechGen++; speechBusy = 0; speechEnd = 0; }
+    if (interrupt) cancelSpeech();
     const text = spoken(t), u = new SpeechSynthesisUtterance(text); u.rate = voiceRate;
     const vs = goodVoices(), v = vs.find(x => x.name === voiceName) || vs[0]; if (v){ u.voice = v; u.lang = v.lang; }
     const gen0 = speechGen; let finished = false;
@@ -1267,6 +1292,7 @@ function speak(t, interrupt){
     u.onend = done; u.onerror = done; speechBusy++;
     const now = Date.now(); speechEnd = Math.max(now, speechEnd) + text.length * 95 / Math.max(0.4, voiceRate) + 800;   // safety net if the browser never reports the end
     setTimeout(done, speechEnd - now + 1500);
+    if (speechSynthesis.paused) speechSynthesis.resume();
     speechSynthesis.speak(u);
   } catch (e) {}
 }
@@ -1276,7 +1302,7 @@ const LEVELS = {beginner:['Beginner', 'West and East play carelessly: they skip 
   intermediate:['Intermediate', 'West and East play a decent game with the occasional slip.'],
   advanced:['Advanced', 'West and East play their best: they block what you need and take every chance to meld or go out.']};
 let speedKey = 'relaxed', levelKey = 'beginner', musicVol = 0.5, musicStyle = 'bouncy';
-const aiDelay = () => SPEEDS[speedKey][1];
+const aiDelay = () => ffwd ? 150 : SPEEDS[speedKey][1];
 let nameDraft = 'Player';
 function saveName(){
   const el = document.getElementById('pname'), v = (el ? el.value : nameDraft).trim().slice(0, 20);
@@ -1488,30 +1514,35 @@ function addFeed(t){
 function drainAlerts(){ if (rs && rs.alerts && rs.alerts.length) rs.alerts.splice(0).forEach(addFeed); }
 function whenQuiet(go, ok = () => true, tries = 0){   // let the narrator finish before the computer moves again
   if (!ok()) return;
-  if (voiceOn && canSpeak() && speechBusy > 0 && tries < 150) return void setTimeout(() => whenQuiet(go, ok, tries + 1), 200);
+  if (!ffwd && voiceOn && canSpeak() && speechBusy > 0 && tries < 150) return void setTimeout(() => whenQuiet(go, ok, tries + 1), 200);
   go();
 }
 function say(text, kind){ notice = {text, kind: kind || 'info'}; if (kind === 'err' || /^Special hand detected/.test(text)) speak(text, true); }
 function clearHint(){ hintIds.clear(); hintText = ''; hintTarget = null; }
 function loop(){
-  if (!rs || rs.ended) return;
-  newIds.clear();   // (not acted(): this is just a turn change)
+  if (!rs || rs.ended){ ffwd = false; return; }
+  newIds.clear();
+  /* draw pile used up: the round ends as soon as the next player has nothing to draw and cannot take the pack */
+  if (rs.phase === 'draw' && !rs.stock.length && !packInfo(rs, rs.current).ok){
+    addFeed('The draw pile is empty, so the round ends.'); endRound(rs, 'stock'); finishRound(); return;
+  }   // (not acted(): this is just a turn change)
   if (rs.current !== 0){
     aiBusy = true; render();
     const myRs = rs, seat = rs.current, g = gen;
     const valid = () => g === gen && rs === myRs && !rs.ended && rs.current === seat;   // false if a new game/round started
     // 1) wait until the voice has finished talking about the last move, 2) light up the next player and pause for the chosen pace, 3) play the move
-    whenQuiet(() => { shownSeat = seat; render(); setTimeout(() => {
+    whenQuiet(() => { shownSeat = seat; render(); const run = () => {
       if (!valid()) return;
       hlTurn = rs.turnNo;
       const log = aiTurn(rs, seat); log.forEach(addFeed);
       const mel = log.filter(l => /added|started a|opened|picked up the pack|completed|went out|declared|laid down|asks/.test(l));
       caption = mel.length ? mel : null;
+      ffwd = false;   // skip only covers this one move; the next player is narrated normally
       if (rs.pendingAsk){ modal = 'ask'; render(); return; }   // North is asking you: wait for your answer
       aiBusy = false; afterAction();
-    }, aiDelay()); }, valid);
+    }; const tm = setTimeout(() => { pendingGo = null; run(); }, aiDelay()); pendingGo = () => { clearTimeout(tm); pendingGo = null; run(); }; }, valid);
   } else {
-    aiBusy = false;
+    aiBusy = false; ffwd = false;
     const myRs2 = rs, g2 = gen; whenQuiet(() => { if (shownSeat !== 0){ shownSeat = 0; render(); } }, () => g2 === gen && rs === myRs2 && !rs.ended && rs.current === 0);
     if (rs.justTalon){ addFeed(`You picked up your talon (${rs.justTalon} cards).`); say(`Your talon (${rs.justTalon} cards) is now in your hand.`, 'info'); rs.justTalon = 0; }
     render();
@@ -1728,10 +1759,19 @@ function modalsHTML(){
   if (modal === 'confirm') h += `<div class="modalbg"><div class="modal"><h2>Start a new game?</h2><p>Your current scores will be lost.</p><button class="btn primary" data-act="newgame2">Yes, new game</button> <button class="btn" data-act="closemodal">Cancel</button></div></div>`;
   return h;
 }
+/* Wide screens: if the green table has more on it than fits, shrink what is on it (never scroll), down to a readable minimum. */
+function fitTable(){
+  const f = document.querySelector('.felt.table.wide'); if (!f) return;
+  let z = 1; f.style.setProperty('--z', 1);
+  const over = () => f.scrollHeight > f.clientHeight + 1 || f.scrollWidth > f.clientWidth + 1;
+  while (over() && z > 0.45){ z = Math.round((z - 0.05) * 100) / 100; f.style.setProperty('--z', z); }
+}
+window.addEventListener('resize', () => { try { fitTable(); } catch (e) {} });
 function paint(html){
   const ae = document.activeElement, keep = ae && ['pname', 'vsel', 'vrate', 'mvol', 'mstyle'].includes(ae.id) ? {id:ae.id, s:ae.selectionStart, e:ae.selectionEnd} : null;
   $app().innerHTML = html;
   const dm = document.querySelector('.modal.drag'); if (dm && (dragX || dragY)) dm.style.transform = `translate(${dragX}px, ${dragY}px)`;
+  fitTable();
   if (keep){ const n = document.getElementById(keep.id); if (n){ n.focus(); try { n.setSelectionRange(keep.s, keep.e); } catch (e) {} } }
 }
 function homeHTML(){
@@ -1761,13 +1801,15 @@ function render(){
   const sp = me && rs.phase === 'play' && specialEligible(rs, 0) ? detectSpecial(rs.hands[0]) : null;
   const info = me && rs.phase === 'draw' ? packInfo(rs, 0) : null;
   const top = rs.pack[rs.pack.length - 1];
-  let h = `<header class="top"><h1>Canasta Practice</h1><div><button class="btn" data-act="home">Home</button> <button class="btn" data-act="hint" ${me ? '' : 'disabled'}>Hint</button> <button class="btn" data-act="drills">Practice drills</button> <button class="btn" data-act="specials">Special hands</button> <button class="btn" data-act="guide">How to play</button> <button class="btn" data-act="leaderboard">Leaderboard</button> <button class="btn" data-act="rules">Rules used</button> <button class="btn" data-act="settings">Settings</button> <button class="btn" data-act="newgame">New game</button></div></header>`;
+  const headerHTML = `<header class="top"><h1>Canasta Practice</h1><div><button class="btn" data-act="home">Home</button> <button class="btn" data-act="hint" ${me ? '' : 'disabled'}>Hint</button> <button class="btn" data-act="drills">Practice drills</button> <button class="btn" data-act="specials">Special hands</button> <button class="btn" data-act="guide">How to play</button> <button class="btn" data-act="leaderboard">Leaderboard</button> <button class="btn" data-act="rules">Rules used</button> <button class="btn" data-act="settings">Settings</button> <button class="btn" data-act="newgame">New game</button></div></header>`;
+  let h = isWide() ? '' : headerHTML;
   h += '<div class="layout"><div class="gamecol">';
-  h += `<div class="scores">
+  const scoresHTML = `<div class="scores">
    <div class="sc you"><div class="n">${TEAM_NAMES[0]}</div><div class="v">${game.scores[0].toLocaleString()}</div><div class="s">${t0.opened ? '✓ Opened' : 'Opening needs ' + rs.needs[0]} · Canastas: ${t0.melds.filter(m => m.closed).length}${(() => { const st = goOutState(rs, 0); return st === 'can-ask' ? ' · <b>ask partner to go out</b>' : (st === 'yes' && goOutCheck(rs, 0).ok ? ' · <b>can go out</b>' : (st === 'refused' ? ' · partner said no' : '')); })()}</div></div>
    <div class="sc opp"><div class="n">${TEAM_NAMES[1]}</div><div class="v">${game.scores[1].toLocaleString()}</div><div class="s">${t1.opened ? '✓ Opened' : 'Opening needs ' + rs.needs[1]} · Canastas: ${t1.melds.filter(m => m.closed).length}</div></div>
    <div class="sc mid"><div class="n">Round ${game.round}</div><div class="s">First to 8,500 wins</div><div class="s">Level: ${LEVELS[levelKey][0]}</div><div class="s">Player: <span id="plname">${esc(playerName)}</span></div><div class="s">Dealer: ${SHORT[game.dealer]}</div></div></div>`;
   const wide = isWide();
+  if (!wide) h += scoresHTML;
   const seatBox = (s, label) => `<div class="seat ${shownSeat === s && !rs.ended ? 'cur' : ''}">${label}<div class="b">${rs.hands[s].length} cards${rs.talon[s].length ? ' + talon ' + rs.talon[s].length : ''}</div></div>`;
   const zone = (s, label, melds1st) => wide ? (melds1st ? seatMeldsHTML(s) + seatBox(s, label) : seatBox(s, label) + seatMeldsHTML(s)) : seatBox(s, label);
   h += `<div class="felt table ${wide ? 'wide' : ''}"><div class="t-n">${zone(2, 'North (partner)')}</div><div class="t-w">${zone(1, 'West')}</div>
@@ -1776,7 +1818,7 @@ function render(){
     <div class="pile ${me && rs.phase === 'draw' && rs.pack.length ? 'click' : ''} ${top && rs.lastDiscard && rs.lastDiscard.id === top.id && rs.lastDiscard.t === hlTurn ? 'justdisc' : ''}" data-act="pack" title="Click to pick up the pack">${top ? cardHTML(top, {mini:false}).replace(' data-card="' + top.id + '"', '') : '<div class="card" style="background:transparent;border:1.5px dashed #fff"></div>'}<div class="lbl">Pack: ${rs.pack.length}${top && rs.lastDiscard && rs.lastDiscard.id === top.id && rs.lastDiscard.t === hlTurn ? '<br><b>' + SHORT[rs.lastDiscard.seat] + ' just discarded</b>' : ''}${!rs.pack.length ? '<br>(empty: no 7, Ace,<br>wild or dead card)' : ''}</div></div>
    </div><div class="deadr">Dead ranks: <b>${deadList().join(', ') || 'none yet'}</b></div>${caption ? `<div class="cap">${caption.slice(0, 3).map(l => `<div>${esc(l)}</div>`).join('')}</div>` : ''}</div>
    <div class="t-e">${zone(3, 'East')}</div><div class="t-s">${zone(0, 'You', true)}</div></div>`;
-  h += `<div class="status">${esc(statusLine())}</div>`;
+  h += `<div class="status">${esc(statusLine())}${!rs.ended ? ' <button class="btn gold" data-act="skip" title="Skip the talking and pause: play this move now and go on to the next player">Skip ▶▶</button>' : ''}</div>`;
   if (rs.ended && rs.end && rs.end.special) h += `<div class="panel"><h3>${esc(SEATS[rs.end.seat])}'s winning hand: ${esc(rs.end.special.name)} (${rs.end.special.points.toLocaleString()} points)</h3>${specialHandHTML(rs.end.special)}</div>`;
   if (hintText) h += `<div class="notice hint"><b>Hint:</b> ${esc(hintText)}</div>`;
   if (notice) h += `<div class="notice ${notice.kind}">${esc(notice.text)}</div>`;
@@ -1800,7 +1842,7 @@ function render(){
     h += `<div class="panel"><h3>Opponents' table (${TEAM_NAMES[1]})</h3>${meldsHTML(t1, false)}</div>`;
   }
   const who = t => /^(You|North)\b/.test(t) ? 'm' : (/^(West|East)\b/.test(t) ? 'o' : '');
-  h += `</div><aside class="logcol"><div class="panel"><h3>Game log</h3><div class="feed" id="feed">${feed.slice(-60).map(t => `<div class="${who(t)}">${esc(t)}</div>`).join('')}</div></div></aside></div>`;
+  h += `</div><aside class="logcol">${headerHTML}${scoresHTML}<div class="panel"><h3>Game log</h3><div class="feed" id="feed">${feed.slice(-60).map(t => `<div class="${who(t)}">${esc(t)}</div>`).join('')}</div></div></aside></div>`;
   h += modalsHTML();
   paint(h);
   const f = document.getElementById('feed'); if (f) f.scrollTop = f.scrollHeight;
@@ -1907,7 +1949,7 @@ function rulesModal(){
   <li><b>Opening meld:</b> 125 points (under 3,000), 155 (3,000 to 4,999), 180 (5,000+). It must include a <b>clean triple</b>. You may add up to 2 wilds to a group that has at least 2 naturals. A wilds-only opening is not allowed.</li>
   <li>After opening: new melds are 3+ naturals. Wilds can be added only once a meld has <b>5 naturals</b> (max 2 wilds). 7s are always clean. Clean Aces stay clean. Deuce/joker melds are allowed, and you must finish one before adding wilds elsewhere.</li>
   <li><b>Talon:</b> the first team to open takes 4 cards, the second takes 3, only if at least 9 cards remain in the draw pile. No talon if you open by taking the pack.</li>
-  <li><b>Pack:</b> use the top card at once, either with two matching naturals from your hand or by adding it to your meld (not if you already have 5+ in that rank). Not allowed if the top card is wild. To open with the pack, stage the rest of your opening meld first, then click "Pick up pack": your matching pair counts toward the minimum, the top card does not.</li>
+  <li><b>Pack:</b> you always need two natural cards in hand matching the top card; the top card then starts a meld with that pair or is added to your existing meld (not if you already have 5+ in that rank). Not allowed if the top card is wild. To open with the pack, stage the rest of your opening meld first, then click "Pick up pack": your matching pair counts toward the minimum, the top card does not.</li>
   <li><b>Discards:</b> double-click a card in your hand to discard it (or select it and click Discard selected). Never a 3. A wild only as your last card. On an empty pile, no 7, Ace, wild or dead card (SWAD). Discarding your last card is going out: it needs 2 canastas, no unfinished 7s, clean Aces or wild meld, and <b>your partner's OK</b> (click "Ask partner to go out"; one ask per round, and a "no" means you cannot go out that round). North may ask you the same way.</li>
   <li><b>Canastas:</b> clean 500, mixed 300, natural 7s or Aces 2,500, all deuces 3,000, four jokers + 2s 2,500, deuces with 1 to 3 jokers 2,000. Going out +100.</li>
   <li><b>3s:</b> 100 / 300 / 500 / 1,000 for 1 / 2 / 3 / 4 of a color. Two canastas: added. One: neutral. None: subtracted. 3s left in hand count against you.</li>
@@ -1944,7 +1986,10 @@ document.addEventListener('click', e => {
   const a = b.dataset.act;
   if ((a === 'draw' || a === 'pack') && rs && !myTurn('draw')){ explainDisabled(a); return; }
   ({drills:openDrills, draw:doDraw, pack:doPack, lay3:doLay3, meld:doMeld, commit:doCommit, undo:doUndo, discard:doDiscard, special:doSpecial, hint:doHint,
-    rules(){ modal = 'rules'; render(); }, specials(){ modal = 'specials'; render(); }, settings(){ modal = 'settings'; nameDraft = playerName; render(); }, peek(){ modal = 'roundmin'; render(); }, showround(){ modal = 'round'; render(); }, askout(){ doAskOut(); }, askyes(){ answerAsk(true); }, askno(){ answerAsk(false); }, home(){ goHome(); }, playgame(){ playFromHome(); }, homenew(){ if (game && !game.over){ modal = 'confirm'; render(); } else startGame(); }, savename(){ saveName(); }, guide(){ modal = 'guide'; render(); }, leaderboard(){ lbConfirm = false; modal = 'leaderboard'; render(); },
+    rules(){ modal = 'rules'; render(); }, specials(){ modal = 'specials'; render(); }, settings(){ modal = 'settings'; nameDraft = playerName; render(); }, peek(){ modal = 'roundmin'; render(); }, skip(){   // while the voice is describing a move: cut that narration only. Otherwise (silent pause before a move): play that move now.
+    if (speechBusy > 0) cancelSpeech();
+    else if (pendingGo) pendingGo();
+  }, showround(){ modal = 'round'; render(); }, askout(){ doAskOut(); }, askyes(){ answerAsk(true); }, askno(){ answerAsk(false); }, home(){ goHome(); }, playgame(){ playFromHome(); }, homenew(){ if (game && !game.over){ modal = 'confirm'; render(); } else startGame(); }, savename(){ saveName(); }, guide(){ modal = 'guide'; render(); }, leaderboard(){ lbConfirm = false; modal = 'leaderboard'; render(); },
     lbreset(){ if (!lbConfirm) lbConfirm = true; else { history = []; saveHistory(); lbConfirm = false; } render(); }, lbcancel(){ lbConfirm = false; render(); }, vtest(){ speak('You drew Ace of diamonds. West discarded King of clubs.', true); }, closemodal(){ modal = screen === 'game' && rs && rs.ended ? 'round' : null; render(); },
     next(){ nextRound(); }, newgame(){ modal = 'confirm'; render(); }, newgame2(){ startGame(); }})[a]();
 });

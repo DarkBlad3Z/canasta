@@ -205,6 +205,8 @@ def fld(p, instr):
     r.font.size = Pt(9)
 rr = fp.add_run(TITLE + "  |  Page "); rr.font.size = Pt(9); rr.font.color.rgb = RGBColor(0x88, 0x88, 0x88)
 fld(fp, 'PAGE')
+fp2 = sec.footer.add_paragraph(); fp2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+r2 = fp2.add_run("Created by J. Lee  |  Modern American Canasta"); r2.font.size = Pt(8); r2.italic = True; r2.font.color.rgb = RGBColor(0x88, 0x88, 0x88)
 
 doc.save('/sessions/youthful-gifted-turing/mnt/outputs/Canasta_Made_Easy.docx')
 
@@ -272,5 +274,6 @@ for title, blocks in CH:
         elif k == 'note': h.append(f'<div class="note {blk[1]}">{inl(blk[2])}</div>')
     h.append("</section>")
 h.append("</main></div>")
+h.append('<p style="text-align:center;color:#777;font-size:13px;margin:24px 0">Created by J. Lee &nbsp;|&nbsp; Modern American Canasta</p>')
 open('/sessions/youthful-gifted-turing/mnt/outputs/build/canasta_online.html', 'w').write("\n".join(h))
 print("ok")

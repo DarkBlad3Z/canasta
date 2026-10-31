@@ -290,6 +290,7 @@ function packInfo(rs, seat){
   const rest = rs.pack.length - 1;
   if (!team.opened) return {ok:true, mode:'open', top};
   if (ex){
+    if (h.filter(c => c.rank === top.rank).length < 2) return bad(`To take the pack you must hold two natural ${rankName(top.rank)} in your hand to match the top card, even when adding to your ${rankName(top.rank)} meld.`);
     if (h.length + rest < keepAfter(team, top.rank, ex.cards.length + 1, ex.pure, seat)) return bad('That would leave you without a card you can legally discard.');
     return {ok:true, mode:'add', meld:ex, top};
   }
